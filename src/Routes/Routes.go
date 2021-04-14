@@ -16,6 +16,9 @@ func SetupRouter() *gin.Engine {
 	{
 		user.GET("/task", Controllers.HandleGetAllTask)
 		user.POST("/task", Controllers.HandleCreateTask)
+		user.GET("/task/:id", Controllers.HandleGetSingleTask)
+		user.PUT("/task/:id", Controllers.HandleUpdateTask)
+		user.DELETE("/task/:id", Controllers.HandleDeleteTask)
 	}
 	return r
 }
