@@ -1,7 +1,8 @@
 package Routes
 
 import (
-	"../Controllers"
+	"../Controllers/Task"
+	"../Controllers/User"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,13 +13,21 @@ func SetupRouter() *gin.Engine {
 			"message": "TASK MANAGER APPLICATION",
 		})
 	})
+	task := r.Group("/task")
+	{
+		task.GET("", Task.HandleGetAllTask)
+		task.POST("", Task.HandleCreateTask)
+		task.GET("/:id", Task.HandleGetSingleTask)
+		task.PUT("/:id", Task.HandleUpdateTask)
+		task.DELETE("/:id", Task.HandleDeleteTask)
+	}
 	user := r.Group("/user")
 	{
-		user.GET("/task", Controllers.HandleGetAllTask)
-		user.POST("/task", Controllers.HandleCreateTask)
-		user.GET("/task/:id", Controllers.HandleGetSingleTask)
-		user.PUT("/task/:id", Controllers.HandleUpdateTask)
-		user.DELETE("/task/:id", Controllers.HandleDeleteTask)
+		user.GET("", User.HandleGetAllUser)
+		user.POST("", User.HandleCreateUser)
+		user.GET("/:id", User.HandleGetSingleUser)
+		user.PUT("/:id", User.HandleUpdateUser)
+		user.DELETE("/:id", User.HandleDeleteUser)
 	}
 	return r
 }
