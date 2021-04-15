@@ -48,17 +48,19 @@ func CreateUser(user *Models.User, c *gin.Context) (primitive.ObjectID, error) {
 func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *Models.User) error {
 
 	var user Models.User
-
+	log.Println(userUpdate.Password)
 	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
 		return err
 	}
 	var update primitive.M
+
 	if userUpdate.Password != "" {
 		update = bson.M{"$set": bson.M{"password": userUpdate.Password}}
+		//log.Println(userUpdate.Password)
 
 	}
 	if len(userUpdate.TaskList) != 0 {
-		update = bson.M{"$set": bson.M{"TaskList": append(user.TaskList, userUpdate.TaskList...)}}
+		update = bson.M{"$set": bson.M{"tasklist": append(user.TaskList, userUpdate.TaskList...)}}
 	}
 
 	if _, err := Connect.Collection.UpdateByID(c, id, update); err != nil {

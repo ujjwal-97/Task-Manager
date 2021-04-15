@@ -77,12 +77,15 @@ func HandleUpdateUser(c *gin.Context) {
 	}
 
 	user := Models.User{}
-	if err := c.Bind(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+	if err := c.ShouldBindJSON(&user); err != nil {
+		log.Print(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
 	}
-
+	log.Println(user.Password)
 	if err := UpdateUser(c, &id, &user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Updated the status of User with Id ": id})
@@ -94,7 +97,7 @@ func HandleDeleteUser(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		return
 	}
 
