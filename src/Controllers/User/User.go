@@ -25,7 +25,7 @@ func GetAllUser(c *gin.Context) ([]*Models.User, error) {
 	}
 	err = cursor.All(c, &users)
 	if err != nil {
-		log.Printf("Failed marshalling %v", err)
+		log.Printf("Failed marshalling %v", err.Error())
 		return nil, err
 	}
 	return users, nil
@@ -38,7 +38,7 @@ func CreateUser(user *Models.User, c *gin.Context) (primitive.ObjectID, error) {
 
 	result, err := Connect.Collection.InsertOne(c, user)
 	if err != nil {
-		log.Printf("Could not create User: %v", err)
+		log.Printf("Could not create User: %v", err.Error())
 		return primitive.NilObjectID, err
 	}
 	oid := result.InsertedID.(primitive.ObjectID)
@@ -48,7 +48,7 @@ func CreateUser(user *Models.User, c *gin.Context) (primitive.ObjectID, error) {
 func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *Models.User) error {
 
 	var user Models.User
-	log.Println(userUpdate.Password)
+
 	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
 		return err
 	}

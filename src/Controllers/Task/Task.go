@@ -25,7 +25,7 @@ func GetAllTask(c *gin.Context) ([]*Models.Task, error) {
 	}
 	err = cursor.All(c, &tasks)
 	if err != nil {
-		log.Printf("Failed marshalling %v", err)
+		log.Printf("Failed marshalling %v", err.Error())
 		return nil, err
 	}
 	return tasks, nil
@@ -38,7 +38,7 @@ func CreateTask(task *Models.Task, c *gin.Context) (primitive.ObjectID, error) {
 
 	result, err := Connect.Collection.InsertOne(c, task)
 	if err != nil {
-		log.Printf("Could not create Task: %v", err)
+		log.Printf("Could not create Task: %v", err.Error())
 		return primitive.NilObjectID, err
 	}
 	oid := result.InsertedID.(primitive.ObjectID)

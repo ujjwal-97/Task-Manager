@@ -22,14 +22,14 @@ const (
 func DBInstance() *mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoServerURL))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	fmt.Println("Connected to MongoDb")
 	return client

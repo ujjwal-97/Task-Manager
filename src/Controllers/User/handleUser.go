@@ -21,7 +21,7 @@ func HandleGetAllUser(c *gin.Context) {
 
 	loadedUsers, err := GetAllUser(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"msg": err})
+		c.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Users": loadedUsers})
@@ -33,13 +33,13 @@ func HandleCreateUser(c *gin.Context) {
 	var user Models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		log.Print(err)
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
 	id, err := CreateUser(&user, c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": err})
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id})
@@ -53,7 +53,7 @@ func HandleGetSingleUser(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Not a valid Hex ID"})
 		return
 	}
@@ -72,7 +72,7 @@ func HandleUpdateUser(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		return
 	}
 
