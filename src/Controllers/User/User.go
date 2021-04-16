@@ -56,7 +56,6 @@ func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *Models.User)
 
 	if userUpdate.Password != "" {
 		update = bson.M{"$set": bson.M{"password": userUpdate.Password}}
-		//log.Println(userUpdate.Password)
 
 	}
 	if len(userUpdate.TaskList) != 0 {

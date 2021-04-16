@@ -1,6 +1,7 @@
 package User
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"../../Models"
@@ -77,11 +78,13 @@ func HandleUpdateUser(c *gin.Context) {
 	}
 
 	user := Models.User{}
-	if err := c.ShouldBindJSON(&user); err != nil {
+
+	if err := json.NewDecoder(c.Request.Body).Decode(&user); err != nil {
 		log.Print(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
+
 	log.Println(user.Password)
 	if err := UpdateUser(c, &id, &user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})

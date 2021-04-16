@@ -6,7 +6,7 @@ import (
 
 type Task struct {
 	Id          primitive.ObjectID `json:"id" bson:"_id" `
-	Title       string             `json:"title" bson:"title""`
+	Title       string             `json:"title" bson:"title"`
 	Description string             `json:"description" bson:"description" `
 	Completed   bool               `json:"completed" bson:"completed" `
 	Deadline    primitive.DateTime `json:"deadline,omitempty" bson:"deadline,omitempty"`
@@ -14,10 +14,10 @@ type Task struct {
 }
 
 type User struct {
-	Id        primitive.ObjectID `json:"id" bson:"_id" `
-	Name      string             `json:"name" bson:"name"`
-	TaskList  []Task             `json:"tasklist" bson:"tasklist"`
-	Email     string             `json:"email" bson:"email" `
-	Password  string             `json:"password" bson:"password"`
-	CreatedAt primitive.DateTime `json:"creationtime" bson:"creationtime"`
+	Id        primitive.ObjectID   `json:"id" bson:"_id" `
+	Name      string               `json:"name" bson:"name"`
+	TaskList  []primitive.ObjectID `json:"tasklist" bson:"tasklist"`
+	Email     string               `json:"email" bson:"email" `
+	Password  string               `json:"password" bson:"password"`
+	CreatedAt primitive.DateTime   `json:"creationtime" bson:"creationtime"`
 }
