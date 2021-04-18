@@ -3,6 +3,7 @@ package Routes
 import (
 	"../Controllers/Task"
 	"../Controllers/User"
+	"../Middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +14,8 @@ func SetupRouter() *gin.Engine {
 			"message": "TASK MANAGER APPLICATION",
 		})
 	})
-	task := r.Group("/task")
+
+	task := r.Group("/task", Middleware.AuthorizeJWT())
 	{
 		task.GET("", Task.HandleGetAllTask)
 		task.POST("", Task.HandleCreateTask)
@@ -21,13 +23,22 @@ func SetupRouter() *gin.Engine {
 		task.PUT("/:id", Task.HandleUpdateTask)
 		task.DELETE("/:id", Task.HandleDeleteTask)
 	}
+	/*
+		user := r.Group("/user")
+		{
+			user.GET("", User.HandleGetAllUser)
+			user.POST("", User.HandleCreateUser)
+			user.POST("/signup", User.Signup)
+			user.GET("/:id", User.HandleGetSingleUser)
+			user.PUT("/:id", User.HandleUpdateUser)
+			user.DELETE("/:id", User.HandleDeleteUser)
+		}
+	*/
 	user := r.Group("/user")
 	{
 		user.GET("", User.HandleGetAllUser)
-		user.POST("", User.HandleCreateUser)
 		user.POST("/signup", User.Signup)
-		user.GET("/:id", User.HandleGetSingleUser)
-		user.PUT("/:id", User.HandleUpdateUser)
+		user.POST("/login", User.HandleLogin)
 		user.DELETE("/:id", User.HandleDeleteUser)
 	}
 	return r

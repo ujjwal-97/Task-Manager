@@ -6,9 +6,7 @@ import (
 	"net/http"
 
 	"../../Models"
-	"../Connect"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func Signup(c *gin.Context) {
@@ -39,18 +37,5 @@ func Signup(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"User created with id": id})
-}
-
-func CheckUserExists(c *gin.Context, email string) (Models.User, bool, string) {
-	// M = Map
-	condition := bson.M{"email": email}
-	var res Models.User
-	// Searching the email
-	err := Connect.Collection.FindOne(c, condition).Decode(&res)
-	ID := res.Id.Hex()
-	if err != nil {
-		return res, false, ID
-	}
-	return res, true, ID
+	c.JSON(http.StatusCreated, gin.H{"User created with id": id})
 }

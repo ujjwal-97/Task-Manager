@@ -11,6 +11,7 @@ type Task struct {
 	Completed   bool               `json:"completed" bson:"completed" `
 	Deadline    primitive.DateTime `json:"deadline,omitempty" bson:"deadline,omitempty"`
 	PostedAt    primitive.DateTime `json:"posttime" bson:"posttime"`
+	Author      primitive.ObjectID `json:"author" bson:"author"`
 }
 
 type User struct {
@@ -20,4 +21,8 @@ type User struct {
 	Email     string               `json:"email" bson:"email" `
 	Password  string               `json:"password" bson:"password"`
 	CreatedAt primitive.DateTime   `json:"creationtime" bson:"creationtime"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token,omitempty"`
 }

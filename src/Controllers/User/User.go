@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"../../Models"
+	"golang.org/x/crypto/bcrypt"
 
 	"log"
 
@@ -35,6 +36,7 @@ func CreateUser(user *Models.User, c *gin.Context) (primitive.ObjectID, error) {
 
 	user.Id = primitive.NewObjectID()
 	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
+	user.Password, _ = EncryptPass(user.Password)
 
 	result, err := Connect.Collection.InsertOne(c, user)
 	if err != nil {
@@ -55,6 +57,7 @@ func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *Models.User)
 	var update primitive.M
 
 	if userUpdate.Password != "" {
+		userUpdate.Password, _ = EncryptPass(user.Password)
 		update = bson.M{"$set": bson.M{"password": userUpdate.Password}}
 
 	}
@@ -78,4 +81,23 @@ func DeleteUser(c *gin.Context, id *primitive.ObjectID) error {
 		return err
 	}
 	return nil
+}
+
+func CheckUserExists(c *gin.Context, email string) (Models.User, bool, string) {
+	// Filter
+	condition := bson.M{"email": email}
+	var res Models.User
+	// Searching the email
+	err := Connect.Collection.FindOne(c, condition).Decode(&res)
+	ID := res.Id.Hex()
+	if err != nil {
+		return res, false, ID
+	}
+	return res, true, ID
+}
+
+func EncryptPass(pass string) (string, error) {
+	cost := 8
+	bytes, err := bcrypt.GenerateFromPassword([]byte(pass), cost)
+	return string(bytes), err
 }
