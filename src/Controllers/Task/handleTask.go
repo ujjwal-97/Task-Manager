@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"../../Middleware"
 	"../Connect"
 )
 
@@ -58,7 +59,7 @@ func HandleGetSingleTask(c *gin.Context) {
 		return
 	}
 
-	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
+	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "author": Middleware.UserID}).Decode(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
 		return
 	}

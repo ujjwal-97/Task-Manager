@@ -13,13 +13,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"../../Middleware"
 	"../Connect"
 )
 
 func GetAllTask(c *gin.Context) ([]*Models.Task, error) {
 
 	var tasks []*Models.Task
-	cursor, err := Connect.Collection.Find(c, bson.D{})
+	cursor, err := Connect.Collection.Find(c, bson.M{"author": Middleware.UserID})
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +36,7 @@ func CreateTask(task *Models.Task, c *gin.Context) (primitive.ObjectID, error) {
 
 	task.Id = primitive.NewObjectID()
 	task.PostedAt = primitive.NewDateTimeFromTime(time.Now())
+	task.Author = Middleware.UserID
 
 	result, err := Connect.Collection.InsertOne(c, task)
 	if err != nil {
@@ -49,7 +51,7 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID) error {
 	var statusUpdate bool
 	var task Models.Task
 
-	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
+	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "author": Middleware.UserID}).Decode(&task); err != nil {
 		return err
 	}
 	statusUpdate = !task.Completed
@@ -64,7 +66,7 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID) error {
 
 func DeleteTask(c *gin.Context, id *primitive.ObjectID) error {
 
-	if result, err := Connect.Collection.DeleteOne(c, bson.M{"_id": &id}); err != nil || result.DeletedCount == 0 {
+	if result, err := Connect.Collection.DeleteOne(c, bson.M{"_id": &id, "author": Middleware.UserID}); err != nil || result.DeletedCount == 0 {
 		if result.DeletedCount == 0 {
 			return errors.New("no such task exist")
 		}

@@ -11,7 +11,7 @@ type Task struct {
 	Completed   bool               `json:"completed" bson:"completed" `
 	Deadline    primitive.DateTime `json:"deadline,omitempty" bson:"deadline,omitempty"`
 	PostedAt    primitive.DateTime `json:"posttime" bson:"posttime"`
-	Author      primitive.ObjectID `json:"author" bson:"author"`
+	Author      string             `json:"author" bson:"author"`
 }
 
 type User struct {
