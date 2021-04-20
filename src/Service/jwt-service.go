@@ -6,17 +6,17 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type JWTService interface {
-	GenerateToken(name string, admin bool) string
+	GenerateToken(Uid primitive.ObjectID) string
 	ValidateToken(tokenString string) (*jwt.Token, error)
 }
 
 // jwtCustomClaims are custom claims extending default ones.
 type jwtCustomClaims struct {
-	Name  string `json:"name"`
-	Admin bool   `json:"admin"`
+	Uid primitive.ObjectID `json:"Uid"`
 	jwt.StandardClaims
 }
 
@@ -40,12 +40,11 @@ func getSecretKey() string {
 	return secret
 }
 
-func (jwtSrv *jwtService) GenerateToken(username string, admin bool) string {
+func (jwtSrv *jwtService) GenerateToken(userid primitive.ObjectID) string {
 
 	// Set custom and standard claims
 	claims := &jwtCustomClaims{
-		username,
-		admin,
+		userid,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 			Issuer:    jwtSrv.issuer,

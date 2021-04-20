@@ -1,6 +1,7 @@
 package Routes
 
 import (
+	"../Controllers/Groups"
 	"../Controllers/Task"
 	"../Controllers/User"
 	"../Middleware"
@@ -9,11 +10,20 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "TASK MANAGER APPLICATION",
 		})
 	})
+
+	user := r.Group("/user")
+	{
+		user.GET("", User.HandleGetAllUser)
+		user.POST("/signup", User.Signup)
+		user.POST("/login", User.HandleLogin)
+		user.DELETE("/:id", User.HandleDeleteUser)
+	}
 
 	task := r.Group("/task", Middleware.AuthorizeJWT())
 	{
@@ -23,23 +33,15 @@ func SetupRouter() *gin.Engine {
 		task.PUT("/:id", Task.HandleUpdateTask)
 		task.DELETE("/:id", Task.HandleDeleteTask)
 	}
-	/*
-		user := r.Group("/user")
-		{
-			user.GET("", User.HandleGetAllUser)
-			user.POST("", User.HandleCreateUser)
-			user.POST("/signup", User.Signup)
-			user.GET("/:id", User.HandleGetSingleUser)
-			user.PUT("/:id", User.HandleUpdateUser)
-			user.DELETE("/:id", User.HandleDeleteUser)
-		}
-	*/
-	user := r.Group("/user")
+
+	groups := r.Group("/group", Middleware.AuthorizeJWT())
 	{
-		user.GET("", User.HandleGetAllUser)
-		user.POST("/signup", User.Signup)
-		user.POST("/login", User.HandleLogin)
-		user.DELETE("/:id", User.HandleDeleteUser)
+		groups.GET("", Groups.HandleGetAllGroup)
+		groups.POST("", Groups.HandleCreateGroup)
+		groups.GET("/:id", Groups.HandleGetSingleGroup)
+		groups.PUT("/:id", Groups.HandleUpdateGroup)
+		groups.DELETE("/:id", Groups.HandleDeleteGroup)
+		groups.PUT("/removeMember/:id", Groups.HandleRemoveMember)
 	}
 	return r
 }

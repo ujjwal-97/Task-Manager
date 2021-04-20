@@ -25,7 +25,7 @@ func (controller *loginController) Login(ctx *gin.Context) string {
 
 	user, err := Service.Login(ctx)
 	if err == nil {
-		return controller.jWtService.GenerateToken(user.Id.Hex(), true)
+		return controller.jWtService.GenerateToken(user.Id)
 	}
 	log.Println(err.Error())
 	return ""
