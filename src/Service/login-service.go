@@ -22,7 +22,7 @@ func Login(c *gin.Context) (Models.User, error) {
 	}
 
 	if len(user.Email) == 0 {
-		return user, errors.New("Email is required")
+		return user, errors.New("email is required")
 	}
 
 	//checked
@@ -37,8 +37,8 @@ func Login(c *gin.Context) (Models.User, error) {
 
 func TrytoLogin(c *gin.Context, email string, password string) (Models.User, error) {
 	user, found, _ := CheckUserExists(c, email)
-	if found == false {
-		return user, errors.New("User doesn't exist")
+	if !found {
+		return user, errors.New("user doesn't exist")
 	}
 	// Validate password
 	passByte := []byte(password)
@@ -46,7 +46,7 @@ func TrytoLogin(c *gin.Context, email string, password string) (Models.User, err
 	// first goes pass encrypted and afer the normal
 	err := bcrypt.CompareHashAndPassword(passBd, passByte)
 	if err != nil {
-		return user, errors.New("Invalid Password")
+		return user, errors.New("invalid Password")
 	}
 	return user, nil
 }

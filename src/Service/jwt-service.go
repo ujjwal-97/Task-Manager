@@ -46,7 +46,7 @@ func (jwtSrv *jwtService) GenerateToken(userid primitive.ObjectID) string {
 	claims := &jwtCustomClaims{
 		userid,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 12).Unix(),
 			Issuer:    jwtSrv.issuer,
 			IssuedAt:  time.Now().Unix(),
 		},

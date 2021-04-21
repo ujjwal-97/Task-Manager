@@ -39,9 +39,10 @@ func SetupRouter() *gin.Engine {
 		groups.GET("", Groups.HandleGetAllGroup)
 		groups.POST("", Groups.HandleCreateGroup)
 		groups.GET("/:id", Groups.HandleGetSingleGroup)
-		groups.PUT("/:id", Groups.HandleUpdateGroup)
 		groups.DELETE("/:id", Groups.HandleDeleteGroup)
+		groups.PUT("/addMember/:id", Groups.HandleAddMember)
 		groups.PUT("/removeMember/:id", Groups.HandleRemoveMember)
+		groups.PUT("/changeAdmin/:id", Groups.HandleChangeAdmin)
 	}
 	return r
 }

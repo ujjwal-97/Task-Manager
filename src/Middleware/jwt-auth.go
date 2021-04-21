@@ -19,8 +19,8 @@ func AuthorizeJWT() gin.HandlerFunc {
 		const BEARER_SCHEMA = "Bearer "
 		authHeader := c.GetHeader("Authorization")
 		if len(authHeader) == 0 {
-			log.Println("Unauthorized Access")
-			c.AbortWithStatus(http.StatusUnauthorized)
+			log.Println("User not logged In")
+			c.JSON(http.StatusUnauthorized, gin.H{"msg": "User not logged In"})
 			return
 		}
 		tokenString := authHeader[len(BEARER_SCHEMA):]
@@ -29,7 +29,7 @@ func AuthorizeJWT() gin.HandlerFunc {
 
 		if token.Valid {
 			claims := token.Claims.(jwt.MapClaims)
-			log.Println("Claims[Uid]: ", claims["Uid"])
+			//log.Println("Claims[Uid]: ", claims["Uid"])
 			useridString := claims["Uid"].(string)
 			if uid, err := primitive.ObjectIDFromHex(useridString); err != nil {
 				log.Println(err.Error())
@@ -37,12 +37,9 @@ func AuthorizeJWT() gin.HandlerFunc {
 			} else {
 				UserID = uid
 			}
-			//log.Println("Claims[Issuer]: ", claims["iss"])
-			//log.Println("Claims[IssuedAt]: ", claims["iat"])
-			//log.Println("Claims[ExpiresAt]: ", claims["exp"])
 		} else {
 			log.Println(err.Error())
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
 		}
 	}
 }

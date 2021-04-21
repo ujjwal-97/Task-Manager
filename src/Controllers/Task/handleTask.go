@@ -25,6 +25,9 @@ func HandleGetAllTask(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
 	}
+	if len(loadedTasks) > 0 {
+		log.Println(loadedTasks[0].GroupName)
+	}
 	c.JSON(http.StatusOK, gin.H{"tasks": loadedTasks})
 }
 

@@ -69,8 +69,8 @@ func HandleGetSingleGroup(c *gin.Context) {
 }
 
 // Update the status of group
-
-func HandleUpdateGroup(c *gin.Context) {
+//id: groupId, body contains memebers
+func HandleAddMember(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
 	if err != nil {
@@ -87,7 +87,7 @@ func HandleUpdateGroup(c *gin.Context) {
 	}
 
 	//log.Println(group.Name)
-	if err := UpdateGroup(c, &id, &group); err != nil {
+	if err := AddMember(c, &id, &group); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		log.Print(err.Error())
 		return
@@ -128,7 +128,7 @@ func HandleRemoveMember(c *gin.Context) {
 
 	if err := RemoveMember(c, &member.Id, &groupID); err != nil {
 		if err.Error() == "Unauthorized" {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
 			return
 		}
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
@@ -136,4 +136,25 @@ func HandleRemoveMember(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Removed member from Group with Id ": member.Id})
+}
+
+func HandleChangeAdmin(c *gin.Context) {
+	groupID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	var member Models.User
+	if err := c.ShouldBindJSON(&member); err != nil {
+		log.Print(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	if err := ChangeAdmin(c, &groupID, &member.Id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Membership Upgraded to Admin": member.Id})
 }
