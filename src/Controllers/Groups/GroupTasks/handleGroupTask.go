@@ -80,6 +80,7 @@ func HandleUpdateStatus(c *gin.Context) {
 
 	if err := UpdateStatus(c, &id, &task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Updated the status of Task with Id ": id})

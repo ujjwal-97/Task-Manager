@@ -20,6 +20,7 @@ func CreateGroupTask(c *gin.Context, groupid primitive.ObjectID, task *Models.Ta
 	task.PostedAt = primitive.NewDateTimeFromTime(time.Now())
 	task.Author = Middleware.UserID
 	task.GroupID = groupid.Hex()
+	task.Status = append(task.Status, "Created")
 	result, err := Connect.Collection.InsertOne(c, task)
 	if err != nil {
 		log.Printf("Could not create Task: %v", err.Error())
@@ -44,7 +45,7 @@ func GetGroupTask(c *gin.Context) ([]*Models.Task, error) {
 		log.Printf("Failed marshalling %v", err.Error())
 		return nil, err
 	}
-	log.Println(len(tasksAdmin))
+	//log.Println(len(tasksAdmin))
 	var tasksMember []*Models.Task
 	cursor2, err := Connect.Collection.Find(c, bson.M{"assignedto": Middleware.UserID.Hex()})
 	if err != nil {
@@ -56,7 +57,7 @@ func GetGroupTask(c *gin.Context) ([]*Models.Task, error) {
 		return nil, err
 	}
 
-	log.Println(len(tasksMember))
+	//log.Println(len(tasksMember))
 	tasksAdmin = append(tasksAdmin, tasksMember...)
 	return tasksAdmin, nil
 }
@@ -85,18 +86,19 @@ func UpdateStatus(c *gin.Context, id *primitive.ObjectID, taskUpdate *Models.Tas
 
 	var task Models.Task
 
-	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "assignedto": Middleware.UserID}).Decode(&task); err != nil {
+	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "assignedto": Middleware.UserID.Hex()}).Decode(&task); err != nil {
 		return err
 	}
 	var update primitive.M
 
 	if len(taskUpdate.Status) != 0 {
-		update = bson.M{"$set": bson.M{"members": append(task.Status, taskUpdate.Status...)}}
+		update = bson.M{"$set": bson.M{"status": append(task.Status, taskUpdate.Status...)}}
 	}
 
 	if _, err := Connect.Collection.UpdateByID(c, id, update); err != nil {
 		return err
 	}
+
 	return nil
 }
 

@@ -12,17 +12,21 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "TASK MANAGER APPLICATION",
-		})
-	})
-
-	user := r.Group("/user")
+	app := r.Group("/")
 	{
-		user.GET("", User.HandleGetAllUser)
-		user.POST("/signup", User.Signup)
-		user.POST("/login", User.HandleLogin)
+		app.GET("/", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "TASK MANAGER APPLICATION",
+			})
+		})
+		//app.GET("/alluser", User.HandleGetAllUser)
+		app.POST("/signup", User.Signup)
+		app.POST("/login", User.HandleLogin)
+	}
+
+	user := r.Group("/user", Middleware.AuthorizeJWT())
+	{
+		user.GET("/:id", User.HandleGetSingleUser)
 		user.DELETE("/:id", User.HandleDeleteUser)
 	}
 
@@ -53,7 +57,6 @@ func SetupRouter() *gin.Engine {
 		grouptask.DELETE("/:id", GroupTasks.HandleDeleteGroupTask)
 		grouptask.PUT("/completion/:id", GroupTasks.HandleAlterCompletion)
 		grouptask.PUT("/status/:id", GroupTasks.HandleUpdateStatus)
-
 	}
 	return r
 }
