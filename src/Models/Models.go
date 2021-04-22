@@ -12,7 +12,8 @@ type Task struct {
 	Deadline    primitive.DateTime `json:"deadline,omitempty" bson:"deadline,omitempty"`
 	PostedAt    primitive.DateTime `json:"posttime" bson:"posttime"`
 	Author      primitive.ObjectID `json:"author" bson:"author"`
-	GroupName   string             `json:"group,omitempty" bson:"group,omitempty"`
+	Status      []string           `json:"status,omitempty" bson:"status,omitempty"`
+	GroupID     string             `json:"group,omitempty" bson:"group,omitempty"`
 	AssignedTo  string             `json:"assignedto,omitempty" bson:"assignedto,omitempty"`
 }
 

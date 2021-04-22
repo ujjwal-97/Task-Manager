@@ -25,9 +25,6 @@ func HandleGetAllTask(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
 	}
-	if len(loadedTasks) > 0 {
-		log.Println(loadedTasks[0].GroupName)
-	}
 	c.JSON(http.StatusOK, gin.H{"tasks": loadedTasks})
 }
 
@@ -77,11 +74,13 @@ func HandleUpdateTask(c *gin.Context) {
 
 	if err != nil {
 		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
 	if err := UpdateTask(c, &id); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Updated the status of Task with Id ": id})

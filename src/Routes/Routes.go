@@ -2,6 +2,7 @@ package Routes
 
 import (
 	"../Controllers/Groups"
+	"../Controllers/Groups/GroupTasks"
 	"../Controllers/Task"
 	"../Controllers/User"
 	"../Middleware"
@@ -43,6 +44,16 @@ func SetupRouter() *gin.Engine {
 		groups.PUT("/addMember/:id", Groups.HandleAddMember)
 		groups.PUT("/removeMember/:id", Groups.HandleRemoveMember)
 		groups.PUT("/changeAdmin/:id", Groups.HandleChangeAdmin)
+	}
+
+	grouptask := r.Group("/grouptask", Middleware.AuthorizeJWT())
+	{
+		grouptask.GET("", GroupTasks.HandleGetGroupTask)
+		grouptask.POST("/:id", GroupTasks.HandleCreateGroupTask)
+		grouptask.DELETE("/:id", GroupTasks.HandleDeleteGroupTask)
+		grouptask.PUT("/completion/:id", GroupTasks.HandleAlterCompletion)
+		grouptask.PUT("/status/:id", GroupTasks.HandleUpdateStatus)
+
 	}
 	return r
 }

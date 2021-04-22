@@ -20,7 +20,9 @@ import (
 func GetAllTask(c *gin.Context) ([]*Models.Task, error) {
 
 	var tasks []*Models.Task
-	cursor, err := Connect.Collection.Find(c, bson.M{"author": Middleware.UserID})
+	cursor, err := Connect.Collection.Find(c, bson.M{"author": Middleware.UserID, "group": bson.M{
+		"$exists": false,
+	}})
 	if err != nil {
 		return nil, err
 	}
@@ -29,6 +31,7 @@ func GetAllTask(c *gin.Context) ([]*Models.Task, error) {
 		log.Printf("Failed marshalling %v", err.Error())
 		return nil, err
 	}
+
 	return tasks, nil
 }
 
@@ -51,7 +54,9 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID) error {
 	var statusUpdate bool
 	var task Models.Task
 
-	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "author": Middleware.UserID}).Decode(&task); err != nil {
+	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "author": Middleware.UserID, "group": bson.M{
+		"$exists": false,
+	}}).Decode(&task); err != nil {
 		return err
 	}
 	statusUpdate = !task.Completed
@@ -66,7 +71,9 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID) error {
 
 func DeleteTask(c *gin.Context, id *primitive.ObjectID) error {
 
-	if result, err := Connect.Collection.DeleteOne(c, bson.M{"_id": &id, "author": Middleware.UserID}); err != nil || result.DeletedCount == 0 {
+	if result, err := Connect.Collection.DeleteOne(c, bson.M{"_id": &id, "author": Middleware.UserID, "group": bson.M{
+		"$exists": false,
+	}}); err != nil || result.DeletedCount == 0 {
 		if result.DeletedCount == 0 {
 			return errors.New("no such task exist")
 		}

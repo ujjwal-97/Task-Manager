@@ -20,7 +20,7 @@ func AuthorizeJWT() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 		if len(authHeader) == 0 {
 			log.Println("User not logged In")
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": "User not logged In"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "User not logged In"})
 			return
 		}
 		tokenString := authHeader[len(BEARER_SCHEMA):]
@@ -33,13 +33,13 @@ func AuthorizeJWT() gin.HandlerFunc {
 			useridString := claims["Uid"].(string)
 			if uid, err := primitive.ObjectIDFromHex(useridString); err != nil {
 				log.Println(err.Error())
-				c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 			} else {
 				UserID = uid
 			}
 		} else {
 			log.Println(err.Error())
-			c.JSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": err.Error()})
 		}
 	}
 }
