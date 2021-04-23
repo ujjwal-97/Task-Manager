@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,11 +16,12 @@ var (
 )
 
 const (
-	MongoServerURL = "mongodb://localhost:27017"
 	collectionName = "task"
 )
 
 func DBInstance() *mongo.Client {
+
+	MongoServerURL := os.ExpandEnv("mongodb://${DB_USERNAME}:${DB_PASSWORD}@$DB_HOST:$DB_PORT/$DB_NAME")
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoServerURL))
 	if err != nil {
 		log.Fatal(err.Error())
