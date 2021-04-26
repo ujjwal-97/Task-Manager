@@ -1,30 +1,31 @@
-package Task
+package Controllers
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"../../Models"
+	"../Models"
 
 	"log"
 
 	"github.com/gin-gonic/gin"
 
+	"../DB"
+	"../Service"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	"../../Middleware"
-	"../Connect"
 )
 
 // GET all tasks
 
 func HandleGetAllTask(c *gin.Context) {
 
-	var loadedTasks, err = GetAllTask(c)
+	var loadedTasks, err = Service.GetAllTask(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"tasks": loadedTasks})
 }
 
@@ -38,12 +39,18 @@ func HandleCreateTask(c *gin.Context) {
 		return
 	}
 
-	id, err := CreateTask(&task, c)
+	id, err := Service.CreateTask(&task, c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": id})
+
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Created Task": task})
 }
 
 // GET a Task
@@ -59,47 +66,65 @@ func HandleGetSingleTask(c *gin.Context) {
 		return
 	}
 
-	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id, "author": Middleware.UserID}).Decode(&task); err != nil {
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"task ": task})
+	c.JSON(http.StatusOK, gin.H{"Task": task})
 }
 
 // Update the status of existing Task
 
 func HandleUpdateTask(c *gin.Context) {
-	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
+	var task Models.Task
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	if err := UpdateTask(c, &id); err != nil {
+	if err := json.NewDecoder(c.Request.Body).Decode(&task); err != nil {
+		log.Print(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Updated the status of Task with Id ": id})
+	if err := Service.UpdateTask(c, &id, &task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Updated Task": task})
 }
 
 // Delete existing Task
 
 func HandleDeleteTask(c *gin.Context) {
-	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
+	var task Models.Task
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 
-	if err := DeleteTask(c, &id); err != nil {
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Deleted Task with Id ": id})
+	if err := Service.DeleteTask(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Deleted Task": task})
 }

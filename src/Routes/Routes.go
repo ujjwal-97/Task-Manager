@@ -1,11 +1,8 @@
 package Routes
 
 import (
-	"../Controllers/Groups"
-	"../Controllers/Groups/GroupTasks"
-	"../Controllers/Task"
-	"../Controllers/User"
-	"../Middleware"
+	"../Controllers"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,44 +16,24 @@ func SetupRouter() *gin.Engine {
 				"message": "TASK MANAGER APPLICATION",
 			})
 		})
-		//app.GET("/alluser", User.HandleGetAllUser)
-		app.POST("/signup", User.Signup)
-		app.POST("/login", User.HandleLogin)
 	}
 
-	user := r.Group("/user", Middleware.AuthorizeJWT())
+	user := r.Group("/user")
 	{
-		user.GET("/:id", User.HandleGetSingleUser)
-		user.DELETE("/:id", User.HandleDeleteUser)
+		user.POST("", Controllers.HandleCreateUser)
+		user.GET("", Controllers.HandleGetAllUser)
+		user.GET("/:id", Controllers.HandleGetSingleUser)
+		user.DELETE("/:id", Controllers.HandleDeleteUser)
 	}
 
-	task := r.Group("/task", Middleware.AuthorizeJWT())
+	task := r.Group("/task")
 	{
-		task.GET("", Task.HandleGetAllTask)
-		task.POST("", Task.HandleCreateTask)
-		task.GET("/:id", Task.HandleGetSingleTask)
-		task.PUT("/:id", Task.HandleUpdateTask)
-		task.DELETE("/:id", Task.HandleDeleteTask)
+		task.GET("", Controllers.HandleGetAllTask)
+		task.POST("", Controllers.HandleCreateTask)
+		task.GET("/:id", Controllers.HandleGetSingleTask)
+		task.PUT("/:id", Controllers.HandleUpdateTask)
+		task.DELETE("/:id", Controllers.HandleDeleteTask)
 	}
 
-	groups := r.Group("/group", Middleware.AuthorizeJWT())
-	{
-		groups.GET("", Groups.HandleGetAllGroup)
-		groups.POST("", Groups.HandleCreateGroup)
-		groups.GET("/:id", Groups.HandleGetSingleGroup)
-		groups.DELETE("/:id", Groups.HandleDeleteGroup)
-		groups.PUT("/addMember/:id", Groups.HandleAddMember)
-		groups.PUT("/removeMember/:id", Groups.HandleRemoveMember)
-		groups.PUT("/changeAdmin/:id", Groups.HandleChangeAdmin)
-	}
-
-	grouptask := r.Group("/grouptask", Middleware.AuthorizeJWT())
-	{
-		grouptask.GET("", GroupTasks.HandleGetGroupTask)
-		grouptask.POST("/:id", GroupTasks.HandleCreateGroupTask)
-		grouptask.DELETE("/:id", GroupTasks.HandleDeleteGroupTask)
-		grouptask.PUT("/completion/:id", GroupTasks.HandleAlterCompletion)
-		grouptask.PUT("/status/:id", GroupTasks.HandleUpdateStatus)
-	}
 	return r
 }

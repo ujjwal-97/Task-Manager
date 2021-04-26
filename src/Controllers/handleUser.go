@@ -1,10 +1,10 @@
-package User
+package Controllers
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"../../Models"
+	"../Models"
 
 	"log"
 
@@ -13,14 +13,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"../Connect"
+	"../DB"
+	"../Service"
 )
 
 // GET all tasks
 
 func HandleGetAllUser(c *gin.Context) {
 
-	loadedUsers, err := GetAllUser(c)
+	loadedUsers, err := Service.GetAllUser(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
@@ -38,12 +39,16 @@ func HandleCreateUser(c *gin.Context) {
 		return
 	}
 
-	id, err := CreateUser(&user, c)
+	id, err := Service.CreateUser(&user, c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": id})
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Created User": user})
 }
 
 // GET a User
@@ -59,12 +64,12 @@ func HandleGetSingleUser(c *gin.Context) {
 		return
 	}
 
-	if err := Connect.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"user ": user})
+	c.JSON(http.StatusOK, gin.H{"User": user})
 }
 
 // Update the status of existing User
@@ -85,29 +90,36 @@ func HandleUpdateUser(c *gin.Context) {
 		return
 	}
 
-	log.Println(user.Password)
-	if err := UpdateUser(c, &id, &user); err != nil {
+	if err := Service.UpdateUser(c, &id, &user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Updated the status of User with Id ": id})
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "No such user exists"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Updated User": user})
 }
 
 // Delete existing User
 
 func HandleDeleteUser(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
-
+	var user Models.User
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
+	if err := DB.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "No such user exists"})
+		return
+	}
 
-	if err := DeleteUser(c, &id); err != nil {
+	if err := Service.DeleteUser(c, &id); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Deleted User with Id ": id})
+	c.JSON(http.StatusOK, gin.H{"Deleted User": user})
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"./Controllers/Connect"
+	"./DB"
 	"./Routes"
 	"github.com/joho/godotenv"
 )
@@ -16,7 +16,7 @@ func main() {
 
 	r := Routes.SetupRouter()
 
-	Connect.EstablishConnection()
+	DB.EstablishConnection()
 
 	r.Run(":5001")
 
