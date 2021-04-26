@@ -10,5 +10,5 @@ type User struct {
 	TaskList  []primitive.ObjectID `json:"tasklist" bson:"tasklist"`
 	Email     string               `json:"email" bson:"email" `
 	Password  string               `json:"password" bson:"password"`
-	CreatedAt primitive.DateTime   `json:"creationtime" bson:"creationtime"`
+	CreatedAt primitive.DateTime   `json:"createdAt" bson:"createdAt"`
 }

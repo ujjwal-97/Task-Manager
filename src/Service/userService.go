@@ -63,7 +63,6 @@ func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *Models.User)
 		update = bson.M{"$set": bson.M{"password": userUpdate.Password}}
 	}
 	if userUpdate.Name != "" {
-		userUpdate.Name, _ = EncryptPass(user.Name)
 		update = bson.M{"$set": bson.M{"name": userUpdate.Name}}
 
 	}
@@ -96,6 +95,7 @@ func EncryptPass(pass string) (string, error) {
 }
 
 func AddTaskTOList(c *gin.Context, user *Models.User) {
+	//log.Println(user)
 	var update bson.M
 	if len(user.TaskList) != 0 {
 		update = bson.M{"$set": bson.M{"tasklist": user.TaskList}}
@@ -105,9 +105,13 @@ func AddTaskTOList(c *gin.Context, user *Models.User) {
 
 func RemoveTaskFromList(c *gin.Context, task Models.Task) {
 	var user *Models.User
-	if err := DB.Collection.FindOne(c, bson.M{"_id": task.TaskUser}).Decode(&user); err != nil {
+	if task.TaskUser == nil {
 		return
 	}
+	if err := DB.Collection.FindOne(c, bson.M{"_id": task.TaskUser.Id}).Decode(&user); err != nil {
+		return
+	}
+
 	var update bson.M
 	updatedList := user.TaskList
 
