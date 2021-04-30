@@ -2,6 +2,8 @@ package Service
 
 import (
 	"errors"
+	"fmt"
+	"os/exec"
 	"time"
 
 	"../Models"
@@ -9,7 +11,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron"
 
+	"../CRON"
 	"../DB"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -55,12 +59,27 @@ func CreateTask(task *Models.Task, c *gin.Context) (primitive.ObjectID, error) {
 		}
 	}
 
+	// Create the cron
+	if _, err := cron.ParseStandard(task.SnapshotSchedule); err != nil {
+		task.SnapshotSchedule = "@every daily"
+	}
+	task.CronID, _ = CRON.C.AddFunc(task.SnapshotSchedule, func() {
+		out, err := exec.Command("VBoxManage", "snapshot", "ubuntu1", "take", user.Email).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(string(out))
+	})
+
 	result, err := DB.Collection.InsertOne(c, task)
 	if err != nil {
 		log.Printf("Could not create Task: %v", err.Error())
+		CRON.C.Remove(task.CronID)
 		return primitive.NilObjectID, err
 	}
 	oid := result.InsertedID.(primitive.ObjectID)
+
 	return oid, nil
 }
 
@@ -115,7 +134,7 @@ func DeleteTask(c *gin.Context, id *primitive.ObjectID) error {
 	}
 
 	RemoveTaskFromList(c, task)
-
+	CRON.C.Remove(task.CronID)
 	if result, err := DB.Collection.DeleteOne(c, bson.M{"_id": &id}); err != nil || result.DeletedCount == 0 {
 		if result.DeletedCount == 0 {
 			return errors.New("task not found")

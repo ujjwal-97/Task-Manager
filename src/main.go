@@ -3,22 +3,37 @@ package main
 import (
 	"fmt"
 	"log"
+	"sync"
 
+	"./CRON"
 	"./DB"
 	"./Routes"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron"
 )
 
 func main() {
+
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Error loading .env file")
 	}
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
 
 	r := Routes.SetupRouter()
-
 	DB.EstablishConnection()
 
-	r.Run(":5001")
+	go func() {
+		CRON.C = cron.New()
+		CRON.C.Start()
+		wg.Done()
+	}()
 
-	fmt.Println("Listen and Server in 0.0.0.0:5001")
+	go func() {
+		r.Run(":5001")
+		fmt.Println("Listen and Server in 0.0.0.0:5001")
+		wg.Done()
+	}()
+
+	wg.Wait()
 }

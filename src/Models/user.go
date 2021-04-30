@@ -9,6 +9,6 @@ type User struct {
 	Name      string               `json:"name" bson:"name"`
 	TaskList  []primitive.ObjectID `json:"tasklist" bson:"tasklist"`
 	Email     string               `json:"email" bson:"email" `
-	Password  string               `json:"password" bson:"password"`
+	Password  string               `json:"-" bson:"password"`
 	CreatedAt primitive.DateTime   `json:"createdAt" bson:"createdAt"`
 }
