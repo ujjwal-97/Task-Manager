@@ -64,7 +64,7 @@ func CreateTask(task *Models.Task, c *gin.Context) (primitive.ObjectID, error) {
 		task.SnapshotSchedule = "@every daily"
 	}
 	task.CronID, _ = CRON.C.AddFunc(task.SnapshotSchedule, func() {
-		out, err := exec.Command("VBoxManage", "snapshot", "ubuntu1", "take", user.Email).Output()
+		out, err := exec.Command("VBoxManage", "snapshot", user.Id.Hex(), "take", user.Email).Output()
 		if err != nil {
 			log.Fatal(err)
 		}

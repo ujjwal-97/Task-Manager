@@ -2,6 +2,9 @@ package Service
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"os/exec"
 	"time"
 
 	"../Models"
@@ -45,6 +48,8 @@ func CreateUser(user *Models.User, c *gin.Context) (primitive.ObjectID, error) {
 		log.Printf("Could not create User: %v", err.Error())
 		return primitive.NilObjectID, err
 	}
+	//Creation of vm with name as user ID
+	go createVM(user.Id)
 	oid := result.InsertedID.(primitive.ObjectID)
 	return oid, nil
 }
@@ -85,6 +90,7 @@ func DeleteUser(c *gin.Context, id *primitive.ObjectID) error {
 		}
 		return err
 	}
+	go removeVM(*id)
 	return nil
 }
 
@@ -127,4 +133,30 @@ func RemoveTaskFromList(c *gin.Context, task Models.Task) {
 
 	update = bson.M{"$set": bson.M{"tasklist": updatedList}}
 	DB.Collection.UpdateByID(c, user.Id, update)
+}
+
+func createVM(userid primitive.ObjectID) {
+
+	filename := os.Getenv("VMImageFileName")
+	path := os.Getenv("VMImagePath")
+
+	args := []string{"import", filename, "--vsys", "0", "--vmname", userid.Hex()}
+	cmd := exec.Command("VBoxManage", args...)
+	cmd.Dir = path
+	out, err := cmd.Output()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(out))
+}
+
+func removeVM(userid primitive.ObjectID) {
+
+	out, err := exec.Command("VBoxManage", "unregistervm", userid.Hex(), "--delete").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(out))
 }
