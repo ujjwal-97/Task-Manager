@@ -2,9 +2,6 @@ package Service
 
 import (
 	"errors"
-	"fmt"
-	"os"
-	"os/exec"
 	"time"
 
 	"../Models"
@@ -49,7 +46,7 @@ func CreateUser(user *Models.User, c *gin.Context) (primitive.ObjectID, error) {
 		return primitive.NilObjectID, err
 	}
 	//Creation of vm with name as user ID
-	go createVM(user.Id)
+	//go createVM(user.Id)
 	oid := result.InsertedID.(primitive.ObjectID)
 	return oid, nil
 }
@@ -90,7 +87,7 @@ func DeleteUser(c *gin.Context, id *primitive.ObjectID) error {
 		}
 		return err
 	}
-	go removeVM(*id)
+	//go removeVM(*id)
 	return nil
 }
 
@@ -135,6 +132,7 @@ func RemoveTaskFromList(c *gin.Context, task Models.Task) {
 	DB.Collection.UpdateByID(c, user.Id, update)
 }
 
+/*
 func createVM(userid primitive.ObjectID) {
 
 	filename := os.Getenv("VMImageFileName")
@@ -160,3 +158,4 @@ func removeVM(userid primitive.ObjectID) {
 	}
 	fmt.Println(string(out))
 }
+*/
