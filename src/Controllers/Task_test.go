@@ -75,6 +75,7 @@ func TestDeleteTask1(t *testing.T) {
 	}
 	con, _ := gin.CreateTestContext(w)
 	c := *con
+
 	DB.EstablishConnection()
 	id := primitive.NewObjectID().Hex()
 	c.Params = append(c.Params, gin.Param{"id", id})
@@ -84,3 +85,23 @@ func TestDeleteTask1(t *testing.T) {
 		t.Error()
 	}
 }
+
+/*
+func TestCreateUser(t *testing.T) {
+
+	w := httptest.NewRecorder()
+	if err := godotenv.Load("../.env"); err != nil {
+		t.Errorf("Error loading .env file")
+	}
+	con, _ := gin.CreateTestContext(w)
+	c := *con
+	DB.EstablishConnection()
+
+	newBody := `{"name":"Username"}`
+	c.Request.Body = ioutil.NopCloser(strings.NewReader(newBody))
+	HandleCreateUser(&c)
+	if w.Code != 400 {
+		t.Error()
+	}
+}
+*/

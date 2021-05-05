@@ -19,7 +19,6 @@ import (
 // GET all tasks
 
 func HandleGetAllTask(c *gin.Context) {
-
 	var loadedTasks, err = Service.GetAllTask(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
