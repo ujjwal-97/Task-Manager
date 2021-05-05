@@ -5,11 +5,12 @@ import (
 	"log"
 	"sync"
 
-	"./CRON"
-	"./DB"
-	"./Routes"
+	"app/CRON"
+	"app/DB"
+	"app/Routes"
+
 	"github.com/joho/godotenv"
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {

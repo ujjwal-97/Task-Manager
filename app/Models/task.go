@@ -1,7 +1,7 @@
 package Models
 
 import (
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

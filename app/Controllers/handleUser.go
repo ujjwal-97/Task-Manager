@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"../Models"
+	"app/Models"
 
 	"log"
 
@@ -13,8 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"../DB"
-	"../Service"
+	"app/DB"
+	"app/Service"
 )
 
 // GET all tasks

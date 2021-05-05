@@ -6,15 +6,16 @@ import (
 	"os/exec"
 	"time"
 
-	"../Models"
+	"app/Models"
 
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 
-	"../CRON"
-	"../DB"
+	"app/CRON"
+	"app/DB"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

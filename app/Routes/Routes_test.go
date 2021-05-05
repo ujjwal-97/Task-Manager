@@ -7,7 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"../DB"
+	"app/DB"
+
 	"github.com/joho/godotenv"
 )
 

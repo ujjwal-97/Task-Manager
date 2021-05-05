@@ -4,7 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"../Models"
+	"app/Models"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"log"
@@ -14,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"../DB"
+	"app/DB"
 )
 
 func GetAllUser(c *gin.Context) ([]*Models.User, error) {

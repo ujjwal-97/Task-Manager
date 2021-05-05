@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"../Models"
+	"app/Models"
 
 	"log"
 
 	"github.com/gin-gonic/gin"
 
-	"../DB"
-	"../Service"
+	"app/DB"
+	"app/Service"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

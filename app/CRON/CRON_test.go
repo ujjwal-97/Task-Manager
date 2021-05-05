@@ -3,7 +3,7 @@ package CRON
 import (
 	"testing"
 
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 )
 
 func TestCron(t *testing.T) {

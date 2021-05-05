@@ -1,7 +1,7 @@
 package Routes
 
 import (
-	"../Controllers"
+	"app/Controllers"
 
 	"github.com/gin-gonic/gin"
 )

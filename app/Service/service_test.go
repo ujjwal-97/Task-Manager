@@ -4,8 +4,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"../DB"
-	"../Models"
+	"app/DB"
+	"app/Models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"

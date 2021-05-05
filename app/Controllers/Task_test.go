@@ -6,7 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"../DB"
+	"app/DB"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"
