@@ -25,15 +25,17 @@ func main() {
 	DB.EstablishConnection()
 
 	go func() {
+		defer wg.Done()
 		CRON.C = cron.New()
 		CRON.C.Start()
-		wg.Done()
 	}()
 
+	go CRON.Jobs()
+
 	go func() {
+		defer wg.Done()
 		r.Run(":5001")
 		fmt.Println("Listen and Server in 0.0.0.0:5001")
-		wg.Done()
 	}()
 
 	wg.Wait()
