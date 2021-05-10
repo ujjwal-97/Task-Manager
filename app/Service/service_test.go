@@ -4,16 +4,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"app/CRON"
 	"app/DB"
 	"app/Models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
 	userId primitive.ObjectID
+	taskId primitive.ObjectID
 )
 
 func TestEncryptPass(t *testing.T) {
@@ -36,14 +39,15 @@ func TestGetAll(t *testing.T) {
 		t.Errorf("Error loading .env file")
 	}
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	c := *con
+
 	DB.EstablishConnection()
-	_, err := GetAllUser(&c)
+	_, err := GetAllUser(con)
 	if err != nil {
 		t.Error()
 	}
 }
 
+//Create a User
 func TestCreateUser(t *testing.T) {
 	user := Models.User{}
 	user.Name = "User1"
@@ -53,64 +57,111 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Error loading .env file")
 	}
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	c := *con
-	DB.EstablishConnection()
-	userId, err = CreateUser(&user, &c)
+
+	userId, err = CreateUser(&user, con)
 	if err != nil {
 		t.Error()
 	}
 }
 
+//Update User details
 func TestUpdateUser(t *testing.T) {
 	user := Models.User{}
 	user.Name = "User1"
 	user.Password = "password"
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
+
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	c := *con
-	DB.EstablishConnection()
+
 	random := primitive.NewObjectID()
-	err := UpdateUser(&c, &random, &user)
+	err := UpdateUser(con, &random, &user)
 	if err == nil {
 		t.Error()
 	}
-	err = UpdateUser(&c, &userId, &user)
+	err = UpdateUser(con, &userId, &user)
 	if err != nil {
 		t.Error()
 	}
 }
 
+//Get all Tasks
+func TestGetAllTask(t *testing.T) {
+	con, _ := gin.CreateTestContext(httptest.NewRecorder())
+	_, err := GetAllTask(con)
+	if err != nil {
+		t.Error()
+	}
+}
+
+//Create Task
+func TestCreateTask(t *testing.T) {
+	con, _ := gin.CreateTestContext(httptest.NewRecorder())
+	CRON.C = cron.New()
+	CRON.C.Start()
+
+	task := Models.Task{}
+	task.Title = "Task1"
+	task.Description = "This is the test task"
+	ID, err := CreateTask(&task, con)
+	if err != nil {
+		t.Error()
+	}
+	taskId = ID
+	task.Status = "Wrong Status"
+	_, err = CreateTask(&task, con)
+	if err == nil {
+		t.Error()
+	}
+}
+
+//Update Task
+func TestUpdateTask(t *testing.T) {
+	con, _ := gin.CreateTestContext(httptest.NewRecorder())
+	CRON.C = cron.New()
+	CRON.C.Start()
+
+	task := Models.Task{}
+	task.Title = "Task2"
+	task.Description = "New Descripton"
+	task.Status = "inprogress"
+	err := UpdateTask(con, &taskId, &task)
+	if err != nil {
+		t.Error()
+	}
+	task.Status = "Wrong Status"
+	err = UpdateTask(con, &taskId, &task)
+	if err == nil {
+		t.Error()
+	}
+}
+
+//Delete Task
+func TestDeleteTask(t *testing.T) {
+
+	con, _ := gin.CreateTestContext(httptest.NewRecorder())
+	//log.Println(taskId)
+	err := DeleteUser(con, &taskId)
+	if err != nil {
+		t.Error()
+	}
+	err = DeleteUser(con, &taskId)
+	if err == nil {
+		t.Error()
+	}
+}
+
+//Delete User
 func TestDeleteUser(t *testing.T) {
 	user := Models.User{}
 	user.Name = "User1"
 	user.Email = "user@email.com"
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	c := *con
-	DB.EstablishConnection()
-	err := DeleteUser(&c, &userId)
-	if err != nil {
-		t.Error()
-	}
-	err = DeleteUser(&c, &userId)
-	if err == nil {
-		t.Error()
-	}
-}
 
-func TestGet(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
-	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	c := *con
-	DB.EstablishConnection()
-	_, err := GetAllTask(&c)
+	err := DeleteUser(con, &userId)
 	if err != nil {
+		t.Error()
+	}
+	err = DeleteUser(con, &userId)
+	if err == nil {
 		t.Error()
 	}
 }

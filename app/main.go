@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 	wg := new(sync.WaitGroup)
-	wg.Add(2)
+	wg.Add(3)
 
 	r := Routes.SetupRouter()
 	DB.EstablishConnection()
@@ -30,7 +30,10 @@ func main() {
 		CRON.C.Start()
 	}()
 
-	go CRON.Jobs()
+	go func() {
+		defer wg.Done()
+		CRON.Jobs()
+	}()
 
 	go func() {
 		defer wg.Done()

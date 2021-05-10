@@ -9,12 +9,23 @@ import (
 	"gopkg.in/robfig/cron.v2"
 )
 
-func Jobs() {
+func Jobs() error {
 
 	c := cron.New()
 	c.Start()
+	err := checkUpdateJob(c)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	err = healthCheckJob(c)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	return err
+}
 
-	c.AddFunc("@midnight", func() {
+func checkUpdateJob(c *cron.Cron) error {
+	_, err := c.AddFunc("@midnight", func() {
 		password := os.Getenv("Password")
 		cmd := "sudo -S <<<" + password + " apt-get update && sudo apt upgrade"
 		out, err := exec.Command("bash", "-c", cmd).Output()
@@ -23,21 +34,26 @@ func Jobs() {
 		}
 		log.Println(string(out))
 	})
-
-	schedule := "0 21 15 1 * ?"
-	//schedule := "0 * * * * *"
-	c.AddFunc(schedule, func() {
-		log.Println(CheckSystemHealth())
-	})
+	return err
 }
 
-func CheckSystemHealth() string {
+func healthCheckJob(c *cron.Cron) error {
+	schedule := "0 21 15 1 * ?"
+	//schedule := "0 * * * * *"
+	_, err := c.AddFunc(schedule, func() {
+		status, _ := CheckSystemHealth()
+		log.Println(status)
+	})
+	return err
+}
+
+func CheckSystemHealth() (string, error) {
 	filename := os.Getenv("healthcheckScript")
 	exec.Command("chmod", "+x", filename)
 	cmd := "./" + filename
 	out, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
-		return fmt.Sprintf("Failed to execute command: %s", err.Error())
+		return fmt.Sprintf("Failed to execute command: %s", err.Error()), err
 	}
-	return string(out)
+	return string(out), nil
 }
