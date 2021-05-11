@@ -1,13 +1,12 @@
 package Routes
 
 import (
+	"app/DB"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"app/DB"
 
 	"github.com/joho/godotenv"
 )
@@ -30,7 +29,6 @@ func TestUserRoutes(t *testing.T) {
 	}
 
 	DB.EstablishConnection()
-
 	router := SetupRouter()
 
 	req, _ := http.NewRequest("GET", "/user", nil)
@@ -68,13 +66,12 @@ func TestCreateUser(t *testing.T) {
 
 	var result map[string]map[string]string
 
-	err = json.Unmarshal([]byte(w.Body.String()), &result)
+	json.Unmarshal(w.Body.Bytes(), &result)
 	value, exists := result["Created User"]["id"]
 
 	if exists {
 		userID = value
 	}
-	//log.Println(userID)
 }
 
 func TestUserByID(t *testing.T) {

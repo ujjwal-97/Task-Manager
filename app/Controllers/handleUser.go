@@ -5,11 +5,9 @@ import (
 	"net/http"
 
 	"app/Models"
-
 	"log"
 
 	"github.com/gin-gonic/gin"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
