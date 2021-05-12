@@ -4,34 +4,28 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDBInstance(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	err := godotenv.Load("../.env")
+	assert.NoError(t, err)
 
 	client := DBInstance()
+	assert.NotEqual(t, client, nil)
 
-	if client == nil {
-		t.Error()
-	}
 	collection := OpenCollection(client, "task")
-	if collection == nil {
-		t.Error()
-	}
+	assert.NotEqual(t, collection, nil)
+
 }
 
 func TestEstablishConnection(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
-	if collectionName != "task" {
-		t.Error()
-	}
+	err := godotenv.Load("../.env")
+	assert.NoError(t, err)
+
+	assert.Equal(t, collectionName, "task")
 
 	EstablishConnection()
-	if Collection == nil {
-		t.Error()
-	}
+	assert.NotEqual(t, Collection, nil)
+
 }

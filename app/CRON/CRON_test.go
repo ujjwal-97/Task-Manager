@@ -5,47 +5,43 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/robfig/cron.v2"
 )
 
 func TestCheckUpdateJob(t *testing.T) {
 	c := cron.New()
 	c.Start()
+
 	err := checkUpdateJob(c)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	os.Setenv("Password", "12345678")
+	assert.NoError(t, err)
+
+	os.Setenv("Password", "-")
 	err = checkUpdateJob(c)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
+	assert.NoError(t, err)
 }
+
 func TestJobs(t *testing.T) {
-	if err := Jobs(); err != nil {
-		t.Errorf(err.Error())
-	}
+	err := Jobs()
+	assert.NoError(t, err)
 }
+
 func TestHealthCheckJob(t *testing.T) {
 	c := cron.New()
 	c.Start()
+
 	err := healthCheckJob(c)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
+	assert.NoError(t, err)
 }
 
 func TestCheckSystemHealth(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
-	status, err := CheckSystemHealth()
-	if err == nil {
-		t.Errorf("%v", status)
-	}
+	err := godotenv.Load("../.env")
+	assert.NoError(t, err)
+
+	_, err = CheckSystemHealth()
+	assert.Error(t, err)
+
 	os.Setenv("healthcheckScript", "../healthCheck.sh")
-	status, err = CheckSystemHealth()
-	if err != nil {
-		t.Errorf("%v", status)
-	}
+	_, err = CheckSystemHealth()
+	assert.NoError(t, err)
 }

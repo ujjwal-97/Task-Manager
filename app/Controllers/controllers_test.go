@@ -2,6 +2,7 @@ package Controllers
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -9,28 +10,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestGetAllTask(t *testing.T) {
 	w := httptest.NewRecorder()
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
+
+	err := godotenv.Load("../.env")
+	assert.NoError(t, err)
+
 	con, _ := gin.CreateTestContext(w)
 	c := *con
 	DB.EstablishConnection()
+
 	HandleGetAllTask(&c)
+	assert.Equal(t, w.Code, http.StatusOK)
 
-	if w.Code != 200 {
-		t.Error()
-	}
+	var result map[string][]string
+	json.Unmarshal(w.Body.Bytes(), &result)
+	_, ok := result["tasks"]
+	assert.Equal(t, ok, true)
 
-	var got gin.H
-	err := json.Unmarshal(w.Body.Bytes(), &got)
-	if err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestGetSingleTask1(t *testing.T) {
@@ -39,11 +40,11 @@ func TestGetSingleTask1(t *testing.T) {
 	c := *con
 	id := primitive.NewObjectID().Hex()
 	c.Params = append(c.Params, gin.Param{"id", id})
-	HandleGetSingleTask(&c)
 
-	if w.Code != 400 {
-		t.Error()
-	}
+	HandleGetSingleTask(&c)
+	assert.Equal(t, w.Code, 400)
+	expected := `{"msg":"Can't find"}`
+	assert.Equal(t, w.Body.String(), expected)
 
 }
 
@@ -65,6 +66,7 @@ func TestCreateTask(t *testing.T) {
 	}
 }
 */
+/*
 func TestGetSingleTask2(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
@@ -77,7 +79,7 @@ func TestGetSingleTask2(t *testing.T) {
 	if w.Code != 200 {
 		t.Error()
 	}
-}
+}*/
 
 func TestDeleteTask1(t *testing.T) {
 	w := httptest.NewRecorder()
@@ -87,28 +89,28 @@ func TestDeleteTask1(t *testing.T) {
 
 	id := primitive.NewObjectID().Hex()
 	c.Params = append(c.Params, gin.Param{"id", id})
-	HandleDeleteTask(&c)
 
-	if w.Code != 400 {
-		t.Error()
-	}
+	HandleDeleteTask(&c)
+	assert.Equal(t, w.Code, 400)
+
+	expected := `{"msg":"mongo: no documents in result"}`
+	assert.Equal(t, w.Body.String(), expected)
+
 }
 
 func TestGetAllUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
 	c := *con
+
 	HandleGetAllUser(&c)
+	assert.Equal(t, w.Code, http.StatusOK)
 
-	if w.Code != 200 {
-		t.Error()
-	}
+	var result map[string][]string
+	json.Unmarshal(w.Body.Bytes(), &result)
+	_, ok := result["Users"]
+	assert.Equal(t, ok, true)
 
-	var got gin.H
-	err := json.Unmarshal(w.Body.Bytes(), &got)
-	if err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestGetSingleUser1(t *testing.T) {
@@ -118,11 +120,16 @@ func TestGetSingleUser1(t *testing.T) {
 
 	id := primitive.NewObjectID().Hex()
 	c.Params = append(c.Params, gin.Param{"id", id})
+
 	HandleGetSingleUser(&c)
-	if w.Code != 400 {
-		t.Error()
-	}
+	assert.Equal(t, w.Code, 400)
+
+	expected := `{"msg":"Can't find User"}`
+	assert.Equal(t, w.Body.String(), expected)
+
 }
+
+/*
 func TestGetSingleUser2(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
@@ -135,7 +142,7 @@ func TestGetSingleUser2(t *testing.T) {
 		t.Error()
 	}
 }
-
+*/
 func TestDeleteUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
@@ -143,9 +150,10 @@ func TestDeleteUser(t *testing.T) {
 
 	id := primitive.NewObjectID().Hex()
 	c.Params = append(c.Params, gin.Param{"id", id})
-	HandleDeleteUser(&c)
 
-	if w.Code != 400 {
-		t.Error()
-	}
+	HandleDeleteUser(&c)
+	assert.Equal(t, w.Code, 400)
+	expected := `{"msg":"No such user exists"}`
+	assert.Equal(t, w.Body.String(), expected)
+
 }

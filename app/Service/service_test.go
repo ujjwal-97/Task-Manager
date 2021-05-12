@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
+	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -21,30 +22,26 @@ var (
 
 func TestEncryptPass(t *testing.T) {
 	result, err := EncryptPass("asdffgjk")
-	if len(result) == 0 || err != nil {
-		t.Error()
-	}
+	assert.NotEmpty(t, result)
+	assert.NoError(t, err)
+
 	result, err = EncryptPass("asdf")
-	if len(result) == 0 || err != nil {
-		t.Error()
-	}
+	assert.NotEmpty(t, result)
+	assert.NoError(t, err)
+
 	result, err = EncryptPass("")
-	if len(result) == 0 || err != nil {
-		t.Error()
-	}
+	assert.NotEmpty(t, result)
+	assert.NoError(t, err)
 }
 
 func TestGetAll(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	err := godotenv.Load("../.env")
+	assert.NoError(t, err)
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	DB.EstablishConnection()
-	_, err := GetAllUser(con)
-	if err != nil {
-		t.Error()
-	}
+	_, err = GetAllUser(con)
+	assert.NoError(t, err)
 }
 
 //Create a User
@@ -52,16 +49,14 @@ func TestCreateUser(t *testing.T) {
 	user := Models.User{}
 	user.Name = "User1"
 	user.Email = "user@email.com"
+
 	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	assert.NoError(t, err)
+
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	userId, err = CreateUser(&user, con)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
 }
 
 //Update User details
@@ -71,25 +66,21 @@ func TestUpdateUser(t *testing.T) {
 	user.Password = "password"
 
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-
 	random := primitive.NewObjectID()
+
 	err := UpdateUser(con, &random, &user)
-	if err == nil {
-		t.Error()
-	}
+	assert.Error(t, err)
+
 	err = UpdateUser(con, &userId, &user)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
 }
 
 //Get all Tasks
 func TestGetAllTask(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
+
 	_, err := GetAllTask(con)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
 }
 
 //Create Task
@@ -101,16 +92,15 @@ func TestCreateTask(t *testing.T) {
 	task := Models.Task{}
 	task.Title = "Task1"
 	task.Description = "This is the test task"
+
 	ID, err := CreateTask(&task, con)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
+
 	taskId = ID
 	task.Status = "Wrong Status"
+
 	_, err = CreateTask(&task, con)
-	if err == nil {
-		t.Error()
-	}
+	assert.Error(t, err)
 }
 
 //Update Task
@@ -123,15 +113,14 @@ func TestUpdateTask(t *testing.T) {
 	task.Title = "Task2"
 	task.Description = "New Descripton"
 	task.Status = "inprogress"
+
 	err := UpdateTask(con, &taskId, &task)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
+
 	task.Status = "Wrong Status"
+
 	err = UpdateTask(con, &taskId, &task)
-	if err == nil {
-		t.Error()
-	}
+	assert.Error(t, err)
 }
 
 //Delete Task
@@ -140,13 +129,10 @@ func TestDeleteTask(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 	//log.Println(taskId)
 	err := DeleteUser(con, &taskId)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
+
 	err = DeleteUser(con, &taskId)
-	if err == nil {
-		t.Error()
-	}
+	assert.Error(t, err)
 }
 
 //Delete User
@@ -157,11 +143,8 @@ func TestDeleteUser(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	err := DeleteUser(con, &userId)
-	if err != nil {
-		t.Error()
-	}
+	assert.NoError(t, err)
+
 	err = DeleteUser(con, &userId)
-	if err == nil {
-		t.Error()
-	}
+	assert.Error(t, err)
 }

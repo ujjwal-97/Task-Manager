@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWelcomePage(t *testing.T) {
@@ -16,17 +17,16 @@ func TestWelcomePage(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
-	if http.StatusOK != w.Code {
-		t.Error()
-	}
+	assert.Equal(t, w.Code, http.StatusOK)
+	expected := `{"message":"TASK MANAGER APPLICATION"}`
+	assert.Equal(t, w.Body.String(), expected)
+
 }
 
 func TestUserRoutes(t *testing.T) {
 
 	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	assert.NoError(t, err)
 
 	DB.EstablishConnection()
 	router := SetupRouter()
@@ -34,10 +34,12 @@ func TestUserRoutes(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/user", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
-	if http.StatusOK != w.Code {
-		t.Error()
-	}
+	assert.Equal(t, w.Code, http.StatusOK)
 
+	var result map[string][]string
+	json.Unmarshal(w.Body.Bytes(), &result)
+	_, ok := result["Users"]
+	assert.Equal(t, ok, true)
 }
 
 var (
@@ -47,9 +49,7 @@ var (
 func TestCreateUser(t *testing.T) {
 
 	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	assert.NoError(t, err)
 
 	DB.EstablishConnection()
 
@@ -58,28 +58,24 @@ func TestCreateUser(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/user", bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
 
-	if http.StatusOK != w.Code {
-		t.Error()
-	}
+	router.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, http.StatusOK)
 
 	var result map[string]map[string]string
 
 	json.Unmarshal(w.Body.Bytes(), &result)
 	value, exists := result["Created User"]["id"]
+	assert.Equal(t, exists, true)
 
-	if exists {
-		userID = value
-	}
+	userID = value
+
 }
 
 func TestUserByID(t *testing.T) {
 
 	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	assert.NoError(t, err)
 
 	DB.EstablishConnection()
 
@@ -87,19 +83,21 @@ func TestUserByID(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/user/"+userID, nil)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
 
-	if http.StatusOK != w.Code {
-		t.Error()
-	}
+	router.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, http.StatusOK)
+
+	var result map[string]map[string]string
+
+	json.Unmarshal(w.Body.Bytes(), &result)
+	_, exists := result["User"]["id"]
+	assert.Equal(t, exists, true)
 }
 
 func TestUpdateUser(t *testing.T) {
 
 	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	assert.NoError(t, err)
 
 	DB.EstablishConnection()
 
@@ -112,17 +110,18 @@ func TestUpdateUser(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, http.StatusOK)
 
-	if http.StatusOK != w.Code {
-		t.Error()
-	}
+	var result map[string]map[string]string
+	json.Unmarshal(w.Body.Bytes(), &result)
+	_, exists := result["Updated User"]["id"]
+	assert.Equal(t, exists, true)
+
 }
 func TestDeleteUser(t *testing.T) {
 
 	err := godotenv.Load("../.env")
-	if err != nil {
-		t.Errorf("Error loading .env file")
-	}
+	assert.NoError(t, err)
 
 	DB.EstablishConnection()
 
@@ -130,9 +129,12 @@ func TestDeleteUser(t *testing.T) {
 
 	req, _ := http.NewRequest("DELETE", "/user/"+userID, nil)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
 
-	if http.StatusOK != w.Code {
-		t.Error()
-	}
+	router.ServeHTTP(w, req)
+	assert.Equal(t, w.Code, http.StatusOK)
+
+	var result map[string]map[string]string
+	json.Unmarshal(w.Body.Bytes(), &result)
+	_, exists := result["Deleted User"]["id"]
+	assert.Equal(t, exists, true)
 }
