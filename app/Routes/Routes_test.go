@@ -25,8 +25,7 @@ func TestWelcomePage(t *testing.T) {
 
 func TestUserRoutes(t *testing.T) {
 
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
 	DB.EstablishConnection()
 	router := SetupRouter()
@@ -48,9 +47,7 @@ var (
 
 func TestCreateUser(t *testing.T) {
 
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
-
+	godotenv.Load("../.env")
 	DB.EstablishConnection()
 
 	router := SetupRouter()
@@ -74,8 +71,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestUserByID(t *testing.T) {
 
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
 	DB.EstablishConnection()
 
@@ -96,8 +92,7 @@ func TestUserByID(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
 	DB.EstablishConnection()
 
@@ -120,8 +115,7 @@ func TestUpdateUser(t *testing.T) {
 }
 func TestDeleteUser(t *testing.T) {
 
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
 	DB.EstablishConnection()
 

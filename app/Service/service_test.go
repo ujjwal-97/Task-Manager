@@ -35,12 +35,12 @@ func TestEncryptPass(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
+
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	DB.EstablishConnection()
-	_, err = GetAllUser(con)
+	_, err := GetAllUser(con)
 	assert.NoError(t, err)
 }
 
@@ -51,7 +51,6 @@ func TestCreateUser(t *testing.T) {
 	user.Email = "user@email.com"
 
 	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
 
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 

@@ -33,11 +33,14 @@ func HandleGetAllTask(c *gin.Context) {
 
 func HandleCreateTask(c *gin.Context) {
 	var task Models.Task
-	if err := c.ShouldBindJSON(&task); err != nil {
-		log.Print(err)
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-		return
-	}
+	c.ShouldBindJSON(&task)
+	/*
+		if err := c.ShouldBindJSON(&task); err != nil {
+			log.Print(err)
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			return
+		}
+	*/
 
 	id, err := Service.CreateTask(&task, c)
 	if err != nil {

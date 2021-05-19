@@ -26,8 +26,7 @@ func Jobs() error {
 
 func checkUpdateJob(c *cron.Cron) error {
 	_, err := c.AddFunc("@midnight", func() {
-		password := os.Getenv("Password")
-		cmd := "sudo -S <<<" + password + " apt-get update && sudo apt upgrade"
+		cmd := "apt update && apt upgrade"
 		out, err := exec.Command("bash", "-c", cmd).Output()
 		if err != nil {
 			log.Fatal(err)

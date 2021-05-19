@@ -3,7 +3,6 @@ package Service
 import (
 	"errors"
 	"fmt"
-	"os/exec"
 	"time"
 
 	"app/Models"
@@ -65,7 +64,7 @@ func CreateTask(task *Models.Task, c *gin.Context) (primitive.ObjectID, error) {
 		task.SnapshotSchedule = "@every daily"
 	}
 	task.CronID, _ = CRON.C.AddFunc(task.SnapshotSchedule, func() {
-		out, err := exec.Command("VBoxManage", "snapshot", user.Id.Hex(), "take", user.Email).Output()
+		out, err := CRON.TakeSnapshot(user.Id.Hex(), user.Email)
 		if err != nil {
 			log.Fatal(err)
 		}

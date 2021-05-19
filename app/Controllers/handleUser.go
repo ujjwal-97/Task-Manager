@@ -31,11 +31,7 @@ func HandleGetAllUser(c *gin.Context) {
 
 func HandleCreateUser(c *gin.Context) {
 	var user Models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		log.Print(err)
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
-		return
-	}
+	c.ShouldBindJSON(&user)
 
 	id, err := Service.CreateUser(&user, c)
 	if err != nil {

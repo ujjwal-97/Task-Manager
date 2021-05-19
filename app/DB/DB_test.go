@@ -8,8 +8,7 @@ import (
 )
 
 func TestDBInstance(t *testing.T) {
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
 	client := DBInstance()
 	assert.NotEqual(t, client, nil)
@@ -20,8 +19,7 @@ func TestDBInstance(t *testing.T) {
 }
 
 func TestEstablishConnection(t *testing.T) {
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
 	assert.Equal(t, collectionName, "task")
 

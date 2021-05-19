@@ -35,13 +35,32 @@ func TestHealthCheckJob(t *testing.T) {
 }
 
 func TestCheckSystemHealth(t *testing.T) {
-	err := godotenv.Load("../.env")
-	assert.NoError(t, err)
+	godotenv.Load("../.env")
 
-	_, err = CheckSystemHealth()
+	_, err := CheckSystemHealth()
 	assert.Error(t, err)
 
 	os.Setenv("healthcheckScript", "../healthCheck.sh")
 	_, err = CheckSystemHealth()
 	assert.NoError(t, err)
+}
+
+func TestTakeSnapshot(t *testing.T) {
+	godotenv.Load("../.env")
+
+	hostIP := os.Getenv("hostip")
+	hostUser := os.Getenv("hostusername")
+	hostPassword := os.Getenv("hostpassword")
+
+	conn, err := Connect(hostIP, hostUser, hostPassword)
+	assert.NoError(t, err)
+
+	_, err = conn.SendCommands("ls")
+	assert.NoError(t, err)
+
+	_, err = TakeSnapshot("ubuntu2", "ubuntu2")
+	assert.NoError(t, err)
+
+	_, err = TakeSnapshot("nil", "nil")
+	assert.Error(t, err)
 }
