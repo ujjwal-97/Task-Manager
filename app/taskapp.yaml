@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment                 
+metadata:
+  name: task-manager-app          
+spec:                  
+  selector:
+    matchLabels:
+      app: task-manager-app       
+  template:                      
+    metadata:
+      labels:                   
+        app: task-manager-app
+    spec:                        
+      containers:
+      - name: task-manager-app
+        image: ujjwalgautam9/task-manager
+        ports:
+          - containerPort: 5001   
+        env:
+        - name: DB_HOST
+          value: mongodb-srv
+        - name: DB_PORT
+          value: "27017"
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: db-name
+        - name: hostip
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: host-ipaddr
+        - name: hostusername
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: host-name
+        - name: hostpassword
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: host-pass
+        - name: healthcheckScript
+          value: "healthCheck.sh"
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: mongo-root-username
+        
+---
+apiVersion: v1
+kind: Service                    
+metadata:
+  name: task-manager-service   
+spec:
+  type: NodePort                
+  ports:                         
+  - name: http
+    port: 5001
+    targetPort: 5001
+  selector:
+    app: task-manager-app 

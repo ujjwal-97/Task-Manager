@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongodb-secret
+type: Opaque
+data:
+  mongo-root-username: YWRtaW4=
+  mongo-root-password: cGFzc3dvcmQ=
+  db-name: dGFza21hbmFnZXI=
+  host-ipaddr: MTkyLjE2OC4yOS4zNDoyMg==
+  host-name: dWpqd2Fs
+  host-pass: dWpqd2FsMTIz
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo
+        ports:
+          - containerPort: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-srv
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - port: 27017
+  
