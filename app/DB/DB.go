@@ -22,13 +22,13 @@ const (
 func DBInstance() *mongo.Client {
 
 	MongoServerURL := os.ExpandEnv("mongodb://$DB_HOST:$DB_PORT/$DB_NAME")
-	/*
-		credential := options.Credential{
-			Username: os.Getenv("DB_USERNAME"),
-			Password: os.Getenv("DB_PASSWORD"),
-		}.SetAuth(credential)*/
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(MongoServerURL))
+	credential := options.Credential{
+		Username: os.Getenv("DB_USERNAME"),
+		Password: os.Getenv("DB_PASSWORD"),
+	}
+
+	client, err := mongo.NewClient(options.Client().ApplyURI(MongoServerURL).SetAuth(credential))
 	if err != nil {
 		log.Fatal(err.Error())
 	}

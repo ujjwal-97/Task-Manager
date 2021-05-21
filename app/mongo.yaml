@@ -12,6 +12,18 @@ data:
   host-pass: dWpqd2FsMTIz
 
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+      
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,12 +40,31 @@ spec:
       labels:
         app: mongodb
     spec:
+      volumes:
+      - name: my-mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: my-mongo-pvc
       containers:
       - name: mongodb
         image: mongo
         ports:
           - containerPort: 27017
-
+        args: ["--auth"]
+        imagePullPolicy: Always
+        env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongo-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongo-root-password 
+        volumeMounts:
+          - name: my-mongo-persistent-storage
+            mountPath: /data/db
 ---
 apiVersion: v1
 kind: Service
