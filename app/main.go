@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"app/CRON"
-	"app/DB"
-	"app/Routes"
+	"app/cronjob"
+	"app/db"
+	"app/routes"
 
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
@@ -17,18 +17,18 @@ func main() {
 	wg := new(sync.WaitGroup)
 	wg.Add(3)
 
-	r := Routes.SetupRouter()
-	DB.EstablishConnection()
+	r := routes.SetupRouter()
+	db.EstablishConnection()
 
 	go func() {
 		defer wg.Done()
-		CRON.C = cron.New()
-		CRON.C.Start()
+		cronjob.C = cron.New()
+		cronjob.C.Start()
 	}()
 
 	go func() {
 		defer wg.Done()
-		CRON.Jobs()
+		cronjob.Jobs()
 	}()
 
 	go func() {
