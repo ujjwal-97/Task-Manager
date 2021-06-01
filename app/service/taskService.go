@@ -22,7 +22,8 @@ import (
 func GetAllTask(c *gin.Context) ([]*models.Task, error) {
 
 	var task []*models.Task
-	cursor, err := utils.FindTask(c)
+	utilsTask := utils.Task{}
+	cursor, err := utilsTask.Find(c)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,9 @@ func CreateTask(task *models.Task, c *gin.Context) (primitive.ObjectID, error) {
 	}
 
 	if task.TaskUser != nil {
-		if err := utils.FindOneUser(c, &task.TaskUser.Id).Decode(&user); err == nil {
+		utilsUser := utils.User{}
+		utilsUser.Id = task.TaskUser.Id
+		if err := utilsUser.FindOne(c).Decode(&user); err == nil {
 			task.TaskUser = &user
 			user.TaskList = append(user.TaskList, task.Id)
 			AddTaskTOList(c, &user)
@@ -66,11 +69,11 @@ func CreateTask(task *models.Task, c *gin.Context) (primitive.ObjectID, error) {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		fmt.Println(string(out))
 	})
 
-	result, err := utils.InsertTask(c, task)
+	var utilsTask utils.Task = utils.Task(*task)
+	result, err := utilsTask.Insert(c)
 	if err != nil {
 		log.Printf("Could not create Task: %v", err.Error())
 		cronjob.C.Remove(task.CronID)
@@ -84,8 +87,9 @@ func CreateTask(task *models.Task, c *gin.Context) (primitive.ObjectID, error) {
 func UpdateTask(c *gin.Context, id *primitive.ObjectID, taskUpdate *models.Task) error {
 
 	var task models.Task
-
-	if err := utils.FindOneTask(c, id).Decode(&task); err != nil {
+	utilsTask := utils.Task{}
+	utilsTask.Id = *id
+	if err := utilsTask.FindOne(c).Decode(&task); err != nil {
 		return err
 	}
 	var update bson.M
@@ -109,7 +113,9 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID, taskUpdate *models.Task)
 
 	if taskUpdate.TaskUser != nil {
 		var user models.User
-		if err := utils.FindOneUser(c, &taskUpdate.TaskUser.Id).Decode(&user); err == nil {
+		utilsUser := utils.User{}
+		utilsUser.Id = taskUpdate.TaskUser.Id
+		if err := utilsUser.FindOne(c).Decode(&user); err == nil {
 			taskUpdate.TaskUser = &user
 			RemoveTaskFromList(c, task)
 			user.TaskList = append(user.TaskList, task.Id)
@@ -117,8 +123,27 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID, taskUpdate *models.Task)
 			update = bson.M{"$set": bson.M{"user": taskUpdate.TaskUser}}
 		}
 	}
+	if taskUpdate.SnapshotSchedule != "" {
+		var user models.User
+		if _, err := cron.ParseStandard(taskUpdate.SnapshotSchedule); err != nil {
+			utilsUser := utils.User{}
+			utilsUser.Id = taskUpdate.TaskUser.Id
+			if err := utilsUser.FindOne(c).Decode(&user); err == nil {
+				cronjob.C.Remove(task.CronID)
+			}
+			cronID, _ := cronjob.C.AddFunc(task.SnapshotSchedule, func() {
+				out, err := cronjob.TakeSnapshot(user.Id.Hex(), user.Email)
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println(string(out))
+			})
+			update = bson.M{"$set": bson.M{"snapshotSchedule": taskUpdate.SnapshotSchedule, "cronid": cronID}}
+		}
 
-	if _, err := utils.UpdateTask(c, id, update); err != nil {
+	}
+	utilsTask.Id = *id
+	if _, err := utilsTask.Update(c, update); err != nil {
 		return err
 	}
 	return nil
@@ -127,13 +152,16 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID, taskUpdate *models.Task)
 func DeleteTask(c *gin.Context, id *primitive.ObjectID) error {
 
 	var task models.Task
-	if err := utils.FindOneTask(c, id).Decode(&task); err != nil {
+	utilsTask := utils.Task{}
+	utilsTask.Id = *id
+	if err := utilsTask.FindOne(c).Decode(&task); err != nil {
 		return errors.New("task not found")
 	}
 
 	RemoveTaskFromList(c, task)
 	cronjob.C.Remove(task.CronID)
-	if result, err := utils.DeleteTask(c, *id); err != nil || result.DeletedCount == 0 {
+
+	if result, err := utilsTask.Delete(c); err != nil || result.DeletedCount == 0 {
 		if result.DeletedCount == 0 {
 			return errors.New("task not found")
 		}

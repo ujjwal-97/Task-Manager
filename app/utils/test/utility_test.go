@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"app/db"
-	"app/models"
 	"app/utils"
 
 	"github.com/gin-gonic/gin"
@@ -26,26 +25,27 @@ func TestFindUser(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	db.EstablishConnection()
-	_, err := utils.FindUser(con)
+	user := utils.User{}
+	_, err := user.Find(con)
 	assert.NoError(t, err)
 }
 
 func TestInsertUser(t *testing.T) {
-
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	var user models.User
+	user := utils.User{}
 	user.Id = primitive.NewObjectID()
 	userId = user.Id
 	user.Email = "demo@email.com"
 	user.Name = "demo"
-	_, err := utils.InsertUser(con, &user)
+	_, err := user.Insert(con)
 	assert.NoError(t, err)
 }
 
 func TestFindOneUser(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	var user models.User
-	err := utils.FindOneUser(con, &userId).Decode(&user)
+	user := utils.User{}
+	user.Id = userId
+	err := user.FindOne(con).Decode(&user)
 	assert.NoError(t, err)
 	assert.Equal(t, user.Id, userId)
 }
@@ -53,9 +53,11 @@ func TestFindOneUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
 	var update primitive.M
-	update = bson.M{"$set": bson.M{"name": "updatedName"}}
 	update = bson.M{"$set": bson.M{"password": "updatedPassword"}}
-	result, err := utils.UpdateUser(con, &taskId, update)
+	update = bson.M{"$set": bson.M{"name": "updatedName"}}
+	user := utils.User{}
+	user.Id = userId
+	result, err := user.Update(con, update)
 	assert.NotEqual(t, 0, result.ModifiedCount)
 	assert.NoError(t, err)
 }
@@ -65,26 +67,28 @@ func TestUpdateUser(t *testing.T) {
 func TestInsertTask(t *testing.T) {
 
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	var task models.Task
+	task := utils.Task{}
 	task.Id = primitive.NewObjectID()
 	taskId = task.Id
 	task.Title = "demoTask"
 	task.Status = "pending"
-	_, err := utils.InsertTask(con, &task)
+	_, err := task.Insert(con)
 	assert.NoError(t, err)
 }
 
 func TestFindOneTask(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	var task models.Task
-	err := utils.FindOneTask(con, &taskId).Decode(&task)
+	task := utils.Task{}
+	task.Id = taskId
+	err := task.FindOne(con).Decode(&task)
 	assert.NoError(t, err)
 	assert.Equal(t, task.Id, taskId)
 }
 
 func TestFindTask(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	_, err := utils.FindTask(con)
+	task := utils.Task{}
+	_, err := task.Find(con)
 	assert.NoError(t, err)
 }
 
@@ -93,14 +97,18 @@ func TestUpdateTask(t *testing.T) {
 	var update primitive.M
 	update = bson.M{"$set": bson.M{"title": "updatedTitle"}}
 	update = bson.M{"$set": bson.M{"status": "completed"}}
-	result, err := utils.UpdateTask(con, &taskId, update)
+	task := utils.Task{}
+	task.Id = taskId
+	result, err := task.Update(con, update)
 	assert.NotEqual(t, 0, result.ModifiedCount)
 	assert.NoError(t, err)
 }
 
 func TestDeleteTask(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	result, err := utils.DeleteTask(con, taskId)
+	task := utils.Task{}
+	task.Id = taskId
+	result, err := task.Delete(con)
 	assert.NoError(t, err)
 	assert.NotEqual(t, result.DeletedCount, 0)
 }
@@ -108,7 +116,9 @@ func TestDeleteTask(t *testing.T) {
 //User
 func TestDeleteUser(t *testing.T) {
 	con, _ := gin.CreateTestContext(httptest.NewRecorder())
-	result, err := utils.DeleteUser(con, &userId)
+	user := utils.User{}
+	user.Id = userId
+	result, err := user.Delete(con)
 	assert.NoError(t, err)
 	assert.NotEqual(t, result.DeletedCount, 0)
 }

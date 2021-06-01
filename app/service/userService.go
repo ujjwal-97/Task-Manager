@@ -18,7 +18,8 @@ import (
 func GetAllUser(c *gin.Context) ([]*models.User, error) {
 
 	var users []*models.User
-	cursor, err := utils.FindUser(c)
+	user := utils.User{}
+	cursor, err := user.Find(c)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +36,8 @@ func CreateUser(user *models.User, c *gin.Context) (primitive.ObjectID, error) {
 	user.Id = primitive.NewObjectID()
 	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now())
 	user.Password, _ = EncryptPass(user.Password)
-
-	result, err := utils.InsertUser(c, user)
+	var utilsUser utils.User = utils.User(*user)
+	result, err := utilsUser.Insert(c)
 	if err != nil {
 		log.Printf("Could not create User: %v", err.Error())
 		return primitive.NilObjectID, err
@@ -50,8 +51,9 @@ func CreateUser(user *models.User, c *gin.Context) (primitive.ObjectID, error) {
 func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *models.User) error {
 
 	var user models.User
-
-	if err := utils.FindOneUser(c, id).Decode(&user); err != nil {
+	utilUser := utils.User{}
+	utilUser.Id = *id
+	if err := utilUser.FindOne(c).Decode(&user); err != nil {
 		return err
 	}
 	var update primitive.M
@@ -66,8 +68,8 @@ func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *models.User)
 	if len(userUpdate.TaskList) != 0 {
 		update = bson.M{"$set": bson.M{"tasklist": append(user.TaskList, userUpdate.TaskList...)}}
 	}
-
-	if _, err := utils.UpdateUser(c, id, update); err != nil {
+	utilUser = utils.User(user)
+	if _, err := utilUser.Update(c, update); err != nil {
 		return err
 	}
 
@@ -75,8 +77,9 @@ func UpdateUser(c *gin.Context, id *primitive.ObjectID, userUpdate *models.User)
 }
 
 func DeleteUser(c *gin.Context, id *primitive.ObjectID) error {
-
-	if result, err := utils.DeleteUser(c, id); err != nil || result.DeletedCount == 0 {
+	utilsUser := utils.User{}
+	utilsUser.Id = *id
+	if result, err := utilsUser.Delete(c); err != nil || result.DeletedCount == 0 {
 		if result.DeletedCount == 0 {
 			return errors.New("no such user exist")
 		}
@@ -98,7 +101,8 @@ func AddTaskTOList(c *gin.Context, user *models.User) {
 	if len(user.TaskList) != 0 {
 		update = bson.M{"$set": bson.M{"tasklist": user.TaskList}}
 	}
-	utils.UpdateUser(c, &user.Id, update)
+	var utilsUser utils.User = utils.User(*user)
+	utilsUser.Update(c, update)
 }
 
 func RemoveTaskFromList(c *gin.Context, task models.Task) {
@@ -106,7 +110,9 @@ func RemoveTaskFromList(c *gin.Context, task models.Task) {
 	if task.TaskUser == nil {
 		return
 	}
-	if err := utils.FindOneUser(c, &task.TaskUser.Id).Decode(&user); err != nil {
+	utilsUser := utils.User{}
+	utilsUser.Id = task.TaskUser.Id
+	if err := utilsUser.FindOne(c).Decode(&user); err != nil {
 		return
 	}
 
@@ -124,7 +130,8 @@ func RemoveTaskFromList(c *gin.Context, task models.Task) {
 	}
 
 	update = bson.M{"$set": bson.M{"tasklist": updatedList}}
-	utils.UpdateUser(c, &user.Id, update)
+	utilsUser = utils.User(*user)
+	utilsUser.Update(c, update)
 }
 
 func CreateVM(userid primitive.ObjectID) (string, error) {

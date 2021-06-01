@@ -2,7 +2,6 @@ package utils
 
 import (
 	"app/db"
-	"app/models"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,24 +9,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func FindTask(c *gin.Context) (*mongo.Cursor, error) {
+func (task *Task) Find(c *gin.Context) (*mongo.Cursor, error) {
 	return db.Collection.Find(c, bson.M{"email": bson.M{
-		"$exists": false,
+		"$exists": true,
 	}})
 }
 
-func FindOneTask(c *gin.Context, id *primitive.ObjectID) *mongo.SingleResult {
-	return db.Collection.FindOne(c, bson.M{"_id": id})
+func (task *Task) FindOne(c *gin.Context) *mongo.SingleResult {
+	return db.Collection.FindOne(c, bson.M{"_id": &task.Id})
 }
 
-func InsertTask(c *gin.Context, task *models.Task) (*mongo.InsertOneResult, error) {
+func (task *Task) Insert(c *gin.Context) (*mongo.InsertOneResult, error) {
 	return db.Collection.InsertOne(c, task)
 }
 
-func UpdateTask(c *gin.Context, id *primitive.ObjectID, update primitive.M) (*mongo.UpdateResult, error) {
-	return db.Collection.UpdateByID(c, id, update)
+func (task *Task) Update(c *gin.Context, update primitive.M) (*mongo.UpdateResult, error) {
+	return db.Collection.UpdateByID(c, &task.Id, update)
 }
 
-func DeleteTask(c *gin.Context, id primitive.ObjectID) (*mongo.DeleteResult, error) {
-	return db.Collection.DeleteOne(c, bson.M{"_id": &id})
+func (task *Task) Delete(c *gin.Context) (*mongo.DeleteResult, error) {
+	return db.Collection.DeleteOne(c, bson.M{"_id": &task.Id})
 }
