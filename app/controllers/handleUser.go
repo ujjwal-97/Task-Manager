@@ -8,10 +8,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	"app/db"
 	"app/service"
 )
 
@@ -30,15 +28,17 @@ func HandleGetAllUser(c *gin.Context) {
 // POST a user
 
 func HandleCreateUser(c *gin.Context) {
-	var user models.User
-	c.ShouldBindJSON(&user)
+	var user *models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		user = &models.User{}
+	}
 
-	id, err := service.CreateUser(&user, c)
+	id, err := service.CreateUser(user, c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
+	if user, err = service.GetSingleUser(c, &id); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
 		return
 	}
@@ -58,7 +58,7 @@ func HandleGetSingleUser(c *gin.Context) {
 		return
 	}
 
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
+	if user, err = service.GetSingleUser(c, &id); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
 		return
 	}
@@ -88,25 +88,25 @@ func HandleUpdateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
-
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "No such user exists"})
+	var updatedUser *models.User
+	if updatedUser, err = service.GetSingleUser(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Updated User": user})
+	c.JSON(http.StatusOK, gin.H{"Updated User": updatedUser})
 }
 
 // Delete existing User
 
 func HandleDeleteUser(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
-	var user models.User
+	var user *models.User
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "No such user exists"})
+	if user, err = service.GetSingleUser(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
 		return
 	}
 
@@ -116,4 +116,18 @@ func HandleDeleteUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Deleted User": user})
+}
+func HandleSnapshot(c *gin.Context) {
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	uuid := ""
+	if uuid, err = service.Snapshot(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "Snapshot taken successfully", "uuid": uuid})
 }

@@ -24,10 +24,10 @@ func TestGetAllTask(t *testing.T) {
 	godotenv.Load("../../.env")
 
 	con, _ := gin.CreateTestContext(w)
-	c := *con
+
 	db.EstablishConnection()
 
-	controllers.HandleGetAllTask(&c)
+	controllers.HandleGetAllTask(con)
 	assert.Equal(t, w.Code, http.StatusOK)
 
 	var result map[string][]string
@@ -48,9 +48,9 @@ var (
 func TestCreateTask(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
+
 	cronjob.C = cron.New()
-	controllers.HandleCreateTask(&c)
+	controllers.HandleCreateTask(con)
 	assert.Equal(t, w.Code, http.StatusOK)
 
 	var result map[string]map[string]string
@@ -64,11 +64,13 @@ func TestCreateTask(t *testing.T) {
 func TestGetSingleTask1(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
-	id := primitive.NewObjectID().Hex()
-	c.Params = append(c.Params, gin.Param{"id", id})
 
-	controllers.HandleGetSingleTask(&c)
+	id := primitive.NewObjectID().Hex()
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: id,
+	})
+	controllers.HandleGetSingleTask(con)
 	assert.Equal(t, w.Code, 400)
 	expected := `{"msg":"Can't find"}`
 	assert.Equal(t, w.Body.String(), expected)
@@ -78,10 +80,12 @@ func TestGetSingleTask1(t *testing.T) {
 func TestGetSingleTask2(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
-	c.Params = append(c.Params, gin.Param{"id", taskID})
 
-	controllers.HandleGetSingleTask(&c)
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: taskID,
+	})
+	controllers.HandleGetSingleTask(con)
 	assert.Equal(t, w.Code, 200)
 	var result map[string]map[string]string
 
@@ -95,15 +99,17 @@ func TestDeleteTask1(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	con, _ := gin.CreateTestContext(w)
-	c := *con
 
 	id := primitive.NewObjectID().Hex()
-	c.Params = append(c.Params, gin.Param{"id", id})
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: id,
+	})
 
-	controllers.HandleDeleteTask(&c)
+	controllers.HandleDeleteTask(con)
 	assert.Equal(t, w.Code, 400)
 
-	expected := `{"msg":"mongo: no documents in result"}`
+	expected := `{"msg":"Can't find"}`
 	assert.Equal(t, w.Body.String(), expected)
 
 }
@@ -112,14 +118,13 @@ func TestDeleteTask2(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	con, _ := gin.CreateTestContext(w)
-	c := *con
 
-	//id := primitive.NewObjectID().Hex()
-	c.Params = append(c.Params, gin.Param{"id", taskID})
-
-	controllers.HandleDeleteTask(&c)
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: taskID,
+	})
+	controllers.HandleDeleteTask(con)
 	assert.Equal(t, w.Code, 200)
-	log.Println(w.Body.String())
 
 	var result map[string]map[string]string
 	json.Unmarshal(w.Body.Bytes(), &result)
@@ -131,9 +136,8 @@ func TestDeleteTask2(t *testing.T) {
 func TestGetAllUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
 
-	controllers.HandleGetAllUser(&c)
+	controllers.HandleGetAllUser(con)
 	assert.Equal(t, w.Code, http.StatusOK)
 
 	var result map[string][]string
@@ -146,9 +150,8 @@ func TestGetAllUser(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
 	cronjob.C = cron.New()
-	controllers.HandleCreateUser(&c)
+	controllers.HandleCreateUser(con)
 	assert.Equal(t, w.Code, http.StatusOK)
 
 	var result map[string]map[string]string
@@ -162,12 +165,13 @@ func TestCreateUser(t *testing.T) {
 func TestGetSingleUser1(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
 
 	id := primitive.NewObjectID().Hex()
-	c.Params = append(c.Params, gin.Param{"id", id})
-
-	controllers.HandleGetSingleUser(&c)
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: id,
+	})
+	controllers.HandleGetSingleUser(con)
 	assert.Equal(t, w.Code, 400)
 
 	expected := `{"msg":"Can't find User"}`
@@ -177,10 +181,11 @@ func TestGetSingleUser1(t *testing.T) {
 func TestGetSingleUser2(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
-	c.Params = append(c.Params, gin.Param{"id", userID})
-
-	controllers.HandleGetSingleUser(&c)
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: userID,
+	})
+	controllers.HandleGetSingleUser(con)
 	assert.Equal(t, w.Code, 200)
 	var result map[string]map[string]string
 
@@ -193,23 +198,26 @@ func TestGetSingleUser2(t *testing.T) {
 func TestDeleteUser1(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
 
 	id := primitive.NewObjectID().Hex()
-	c.Params = append(c.Params, gin.Param{"id", id})
-
-	controllers.HandleDeleteUser(&c)
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: id,
+	})
+	controllers.HandleDeleteUser(con)
 	assert.Equal(t, w.Code, 400)
-	expected := `{"msg":"No such user exists"}`
+	expected := `{"msg":"Can't find User"}`
 	assert.Equal(t, w.Body.String(), expected)
 }
 func TestDeleteUser2(t *testing.T) {
 	w := httptest.NewRecorder()
 	con, _ := gin.CreateTestContext(w)
-	c := *con
-	c.Params = append(c.Params, gin.Param{"id", userID})
 
-	controllers.HandleDeleteUser(&c)
+	con.Params = append(con.Params, gin.Param{
+		Key:   "id",
+		Value: userID,
+	})
+	controllers.HandleDeleteUser(con)
 	assert.Equal(t, w.Code, 200)
 
 	var result map[string]map[string]string

@@ -29,7 +29,7 @@ func ExecCommandOnHost(command string) (string, error) {
 	if err != nil {
 		return "Error Executing Command", err
 	}
-
+	conn.Close()
 	return string(output), nil
 }
 

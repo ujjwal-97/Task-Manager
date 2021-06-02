@@ -10,10 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"app/db"
 	"app/service"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -32,19 +30,18 @@ func HandleGetAllTask(c *gin.Context) {
 // POST a task
 
 func HandleCreateTask(c *gin.Context) {
-	var task models.Task
+	var task *models.Task
 	if err := c.ShouldBindJSON(&task); err != nil {
-		log.Println(err)
+		task = &models.Task{}
 	}
 
-	id, err := service.CreateTask(&task, c)
+	id, err := service.CreateTask(task, c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
-
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+	if task, err = service.GetSingleTask(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
 		return
 	}
 
@@ -64,7 +61,7 @@ func HandleGetSingleTask(c *gin.Context) {
 		return
 	}
 
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
+	if task, err = service.GetSingleTask(c, &id); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
 		return
 	}
@@ -76,27 +73,25 @@ func HandleGetSingleTask(c *gin.Context) {
 
 func HandleUpdateTask(c *gin.Context) {
 
-	var task models.Task
+	var task *models.Task
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
-		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
 	if err := json.NewDecoder(c.Request.Body).Decode(&task); err != nil {
-		log.Print(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	if err := service.UpdateTask(c, &id, &task); err != nil {
+	if err := service.UpdateTask(c, &id, task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+	if task, err = service.GetSingleTask(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
 		return
 	}
 
@@ -107,15 +102,15 @@ func HandleUpdateTask(c *gin.Context) {
 
 func HandleDeleteTask(c *gin.Context) {
 
-	var task models.Task
+	var task *models.Task
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 
-	if err := db.Collection.FindOne(c, bson.M{"_id": &id}).Decode(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+	if task, err = service.GetSingleTask(c, &id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find"})
 		return
 	}
 

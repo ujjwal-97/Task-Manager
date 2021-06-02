@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,19 @@ func GetAllUser(c *gin.Context) ([]*models.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+func GetSingleUser(c *gin.Context, id *primitive.ObjectID) (*models.User, error) {
+
+	var user *models.User
+	utilUser := utils.User{}
+	utilUser.Id = *id
+	cursor := utilUser.FindOne(c)
+	err := cursor.Decode(&user)
+	if err != nil {
+		log.Printf("Failed marshalling %v", err.Error())
+		return nil, err
+	}
+	return user, nil
 }
 
 func CreateUser(user *models.User, c *gin.Context) (primitive.ObjectID, error) {
@@ -158,4 +172,19 @@ func RemoveVM(userid primitive.ObjectID) (string, error) {
 	}
 	log.Println(out + "\n !-- VM deleted successfully --!")
 	return string(out), nil
+}
+
+func Snapshot(c *gin.Context, id *primitive.ObjectID) (string, error) {
+	user := utils.User{}
+	user.Id = *id
+	if err := user.FindOne(c).Decode(&user); err != nil {
+		return "", errors.New("no such user exists")
+	}
+	out, err := cronjob.TakeSnapshot(user.Id.Hex(), user.Email)
+	if err != nil {
+		return "", err
+	}
+	outArray := strings.Fields(out)
+	uuid := outArray[4]
+	return uuid, nil
 }

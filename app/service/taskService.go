@@ -35,6 +35,20 @@ func GetAllTask(c *gin.Context) ([]*models.Task, error) {
 	return task, nil
 }
 
+func GetSingleTask(c *gin.Context, id *primitive.ObjectID) (*models.Task, error) {
+
+	var task *models.Task
+	utilTask := utils.Task{}
+	utilTask.Id = *id
+	cursor := utilTask.FindOne(c)
+	err := cursor.Decode(&task)
+	if err != nil {
+		log.Printf("Failed marshalling %v", err.Error())
+		return nil, err
+	}
+	return task, nil
+}
+
 func CreateTask(task *models.Task, c *gin.Context) (primitive.ObjectID, error) {
 
 	var user models.User

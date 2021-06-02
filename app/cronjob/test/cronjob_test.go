@@ -2,6 +2,7 @@ package cronjob
 
 import (
 	"app/cronjob"
+	"log"
 	"os"
 	"testing"
 
@@ -66,8 +67,9 @@ func TestTakeSnapshot(t *testing.T) {
 	_, err = conn.SendCommands("ls")
 	assert.NoError(t, err)
 
-	_, err = cronjob.TakeSnapshot("ubuntu2", "ubuntu2")
+	out, err := cronjob.TakeSnapshot("ubuntu2", "ubuntu2")
 	assert.NoError(t, err)
+	log.Println(out)
 
 	_, err = cronjob.TakeSnapshot("nil", "nil")
 	assert.Error(t, err)

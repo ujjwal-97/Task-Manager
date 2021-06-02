@@ -22,6 +22,8 @@ spec:
           value: mongodb-srv
         - name: DB_PORT
           value: "27017"
+        - name: SnapshotLimit
+          value: "5"
         - name: DB_NAME
           valueFrom:
             secretKeyRef:
