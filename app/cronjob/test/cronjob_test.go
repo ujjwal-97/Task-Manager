@@ -2,9 +2,10 @@ package cronjob
 
 import (
 	"app/cronjob"
-	"log"
+	"app/models"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
@@ -67,10 +68,65 @@ func TestTakeSnapshot(t *testing.T) {
 	_, err = conn.SendCommands("ls")
 	assert.NoError(t, err)
 
-	out, err := cronjob.TakeSnapshot("ubuntu2", "ubuntu2")
+	_, err = cronjob.TakeSnapshot("ubuntu2", "ubuntu2")
 	assert.NoError(t, err)
-	log.Println(out)
 
 	_, err = cronjob.TakeSnapshot("nil", "nil")
 	assert.Error(t, err)
+}
+
+func TestScheduleSnapshot(t *testing.T) {
+	godotenv.Load("../../.env")
+
+	hostIP := os.Getenv("hostip")
+	hostUser := os.Getenv("hostusername")
+	hostPassword := os.Getenv("hostpassword")
+
+	conn, err := cronjob.Connect(hostIP, hostUser, hostPassword)
+	assert.NoError(t, err)
+
+	_, err = conn.SendCommands("ls")
+	assert.NoError(t, err)
+
+	timming := models.Schedule{
+		Minute:  time.Now().Minute() + 1,
+		Hour:    time.Now().Hour(),
+		Day:     0,
+		Month:   0,
+		Weekday: -1,
+	}
+	_, err = cronjob.ScheduleSnapshot(&timming, "ubuntu2", "ubuntu2")
+	assert.NoError(t, err)
+	timming = models.Schedule{
+		Minute:  time.Now().Minute() + 2,
+		Hour:    time.Now().Hour(),
+		Day:     time.Now().Day(),
+		Month:   timming.Month,
+		Weekday: -1,
+	}
+	_, err = cronjob.ScheduleSnapshot(&timming, "ubuntu2", "ubuntu2")
+	assert.NoError(t, err)
+}
+
+func TestCreateCronExpression(t *testing.T) {
+	s := models.ScheduleSnapshot{
+		Periodic: false,
+		Schedule: &models.Schedule{
+			Minute:  0,
+			Hour:    0,
+			Day:     0,
+			Month:   0,
+			Weekday: -1,
+		},
+		Interval: &models.Interval{
+			Minute: 0,
+			Hour:   0,
+			Day:    0,
+			Month:  0,
+		},
+	}
+	res := cronjob.CreateCronExpression(&s)
+	ans := "* * * * *"
+	assert.Equal(t, ans, res)
+
 }

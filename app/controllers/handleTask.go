@@ -32,6 +32,7 @@ func HandleGetAllTask(c *gin.Context) {
 func HandleCreateTask(c *gin.Context) {
 	var task *models.Task
 	if err := c.ShouldBindJSON(&task); err != nil {
+		log.Println(err.Error())
 		task = &models.Task{}
 	}
 

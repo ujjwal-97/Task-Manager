@@ -38,7 +38,6 @@ func CheckUpdateJob(c *cron.Cron) error {
 
 func HealthCheckJob(c *cron.Cron) error {
 	schedule := "0 0 0 1 * ?"
-	//schedule := "0 * * * * *"
 	_, err := c.AddFunc(schedule, func() {
 		status, _ := CheckSystemHealth()
 		log.Println(status)

@@ -149,7 +149,8 @@ func TestTaskRoutes(t *testing.T) {
 	db.EstablishConnection()
 	router := routes.SetupRouter()
 
-	req, _ := http.NewRequest("GET", "/task", nil)
+	req, err := http.NewRequest("GET", "/task", nil)
+	assert.NoError(t, err)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	assert.Equal(t, w.Code, http.StatusOK)

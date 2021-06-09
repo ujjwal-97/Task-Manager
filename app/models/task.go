@@ -14,5 +14,24 @@ type Task struct {
 	TaskUser         *User              `json:"user,omitempty" bson:"user,omitempty"`
 	Status           string             `json:"status" bson:"status"`
 	CronID           cron.EntryID       `json:"-" bson:"cronid"`
-	SnapshotSchedule string             `json:"snapshotSchedule" bson:"snapshotSchedule"`
+	SnapshotSchedule *ScheduleSnapshot  `json:"snapshotSchedule" bson:"snapshotSchedule"`
+}
+
+type ScheduleSnapshot struct {
+	Periodic bool      `json:"periodic" bson:"periodic"`
+	Schedule *Schedule `json:"schedule" bson:"schedule"`
+	Interval *Interval `json:"interval" bson:"interval"`
+}
+type Interval struct {
+	Minute int `json:"minute" bson:"minute"`
+	Hour   int `json:"hour" bson:"hour"`
+	Day    int `json:"day" bson:"day"`
+	Month  int `json:"month" bson:"month"`
+}
+type Schedule struct {
+	Minute  int `json:"minute" bson:"minute"`
+	Hour    int `json:"hour" bson:"hour"`
+	Day     int `json:"day" bson:"day"`
+	Month   int `json:"month" bson:"month"`
+	Weekday int `json:"weekday" bson:"weekday"`
 }

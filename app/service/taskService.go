@@ -75,16 +75,26 @@ func CreateTask(task *models.Task, c *gin.Context) (primitive.ObjectID, error) {
 	}
 
 	// Create the cron
-	if _, err := cron.ParseStandard(task.SnapshotSchedule); err != nil {
-		task.SnapshotSchedule = "@every daily"
-	}
-	task.CronID, _ = cronjob.C.AddFunc(task.SnapshotSchedule, func() {
-		out, err := cronjob.TakeSnapshot(user.Id.Hex(), user.Email)
-		if err != nil {
-			log.Fatal(err)
+
+	schedule := ""
+	if task.SnapshotSchedule != nil {
+		if task.SnapshotSchedule.Periodic {
+
+			schedule = cronjob.CreateCronExpression(task.SnapshotSchedule)
+			if _, err := cron.ParseStandard(schedule); err != nil {
+				schedule = "@every daily"
+			}
+			task.CronID, _ = cronjob.C.AddFunc(schedule, func() {
+				out, err := cronjob.TakeSnapshot(user.Id.Hex(), user.Email)
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println(string(out))
+			})
+		} else {
+			cronjob.ScheduleSnapshot(task.SnapshotSchedule.Schedule, user.Id.Hex(), user.Email)
 		}
-		fmt.Println(string(out))
-	})
+	}
 
 	var utilsTask utils.Task = utils.Task(*task)
 	result, err := utilsTask.Insert(c)
@@ -137,25 +147,7 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID, taskUpdate *models.Task)
 			update = bson.M{"$set": bson.M{"user": taskUpdate.TaskUser}}
 		}
 	}
-	if taskUpdate.SnapshotSchedule != "" {
-		var user models.User
-		if _, err := cron.ParseStandard(taskUpdate.SnapshotSchedule); err != nil {
-			utilsUser := utils.User{}
-			utilsUser.Id = taskUpdate.TaskUser.Id
-			if err := utilsUser.FindOne(c).Decode(&user); err == nil {
-				cronjob.C.Remove(task.CronID)
-			}
-			cronID, _ := cronjob.C.AddFunc(task.SnapshotSchedule, func() {
-				out, err := cronjob.TakeSnapshot(user.Id.Hex(), user.Email)
-				if err != nil {
-					log.Fatal(err)
-				}
-				fmt.Println(string(out))
-			})
-			update = bson.M{"$set": bson.M{"snapshotSchedule": taskUpdate.SnapshotSchedule, "cronid": cronID}}
-		}
 
-	}
 	utilsTask.Id = *id
 	if _, err := utilsTask.Update(c, update); err != nil {
 		return err
