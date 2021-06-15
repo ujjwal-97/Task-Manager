@@ -2,6 +2,9 @@ package cronjob
 
 import (
 	"app/models"
+	"errors"
+	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -17,13 +20,13 @@ func TakeSnapshot(vmname string, snapshotName string) (string, error) {
 	datetime := time.Now().Format(time.RFC3339)
 	snapshotName += "_" + datetime
 
-	output, _ := ExecCommandOnHost("VBoxManage snapshot " + vmname + " list")
+	output, _ := ExecCommandOnHost("vboxmanage snapshot " + vmname + " list")
 
 	if err := checkSnapshotLimit(output, vmname); err != nil {
 		return "", err
 	}
 
-	output, err := ExecCommandOnHost("VBoxManage snapshot " + vmname + " take " + snapshotName)
+	output, err := ExecCommandOnHost("vboxmanage snapshot " + vmname + " take " + snapshotName)
 	if err != nil {
 		return "Error Executing Command", err
 	}
@@ -61,6 +64,7 @@ func ScheduleSnapshot(schedule *models.Schedule, vmname string, snapshotName str
 
 	return string(output), nil
 }
+
 func formatTime(value int) string {
 	if value < 10 {
 		return "0" + strconv.Itoa(value)
@@ -96,4 +100,27 @@ func createStringCron(value int, mod int, factor int) string {
 		newTimeUnit += "/" + strconv.Itoa(factor)
 	}
 	return newTimeUnit
+}
+
+func CreateSnapshotCron(timeStamp *models.ScheduleSnapshot, user *models.User) (cron.EntryID, error) {
+	if timeStamp != nil {
+		if timeStamp.Periodic {
+			cronExpression := CreateCronExpression(timeStamp)
+			if _, err := cron.ParseStandard(cronExpression); err != nil {
+				cronExpression = "@every daily"
+			}
+			cronID, _ := C.AddFunc(cronExpression, func() {
+				out, err := TakeSnapshot(user.Id.Hex(), user.Email)
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+				fmt.Println(string(out))
+			})
+			return cronID, nil
+		} else {
+			ScheduleSnapshot(timeStamp.Schedule, user.Id.Hex(), user.Email)
+			return 0, errors.New("scheduled for once execution")
+		}
+	}
+	return 0, errors.New("no cron job to schedule")
 }

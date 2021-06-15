@@ -11,7 +11,7 @@ import (
 
 func (task *Task) Find(c *gin.Context) (*mongo.Cursor, error) {
 	return db.Collection.Find(c, bson.M{"email": bson.M{
-		"$exists": true,
+		"$exists": false,
 	}})
 }
 
