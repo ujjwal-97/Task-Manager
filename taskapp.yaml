@@ -24,6 +24,8 @@ spec:
           value: "27017"
         - name: SnapshotLimit
           value: "5"
+        - name: BackupPath
+          value: "backup/dbbackup.gz"
         - name: DB_NAME
           valueFrom:
             secretKeyRef:

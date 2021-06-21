@@ -16,17 +16,24 @@ func Jobs() error {
 	err := CheckUpdateJob(c)
 	if err != nil {
 		log.Println(err.Error())
+		return err
 	}
 	err = HealthCheckJob(c)
 	if err != nil {
 		log.Println(err.Error())
+		return err
 	}
 	err = StartUpPreviousCron(c)
 	if err != nil {
 		log.Println(err.Error())
+		return err
+	}
+	err = CreateDumpCron(c)
+	if err != nil {
+		log.Println(err.Error())
+		return err
 	}
 	return err
-
 }
 
 func CheckUpdateJob(c *cron.Cron) error {

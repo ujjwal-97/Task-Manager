@@ -2,6 +2,7 @@ package cronjob
 
 import (
 	"app/cronjob"
+	"app/db"
 	"app/models"
 	"os"
 	"testing"
@@ -68,7 +69,7 @@ func TestTakeSnapshot(t *testing.T) {
 	_, err = conn.SendCommands("ls")
 	assert.NoError(t, err)
 
-	_, err = cronjob.TakeSnapshot("ubuntu2", "ubuntu2")
+	_, err = cronjob.TakeSnapshot("machine2", "machine2")
 	assert.NoError(t, err)
 
 	_, err = cronjob.TakeSnapshot("nil", "nil")
@@ -129,4 +130,28 @@ func TestCreateCronExpression(t *testing.T) {
 	ans := "* * * * *"
 	assert.Equal(t, ans, res)
 
+}
+
+func TestStartUpPreviousCron(t *testing.T) {
+	godotenv.Load("../../.env")
+	db.EstablishConnection()
+	c := cron.New()
+	c.Start()
+
+	err := cronjob.StartUpPreviousCron(c)
+	assert.NoError(t, err)
+}
+
+func TestDatabasebackup(t *testing.T) {
+	godotenv.Load("../../.env")
+
+	_, err := cronjob.CreateDump()
+	assert.NoError(t, err)
+}
+
+func TestRestoreBackup(t *testing.T) {
+	godotenv.Load("../../.env")
+
+	_, err := cronjob.RestoreDump()
+	assert.NoError(t, err)
 }
