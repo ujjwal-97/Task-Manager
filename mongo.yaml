@@ -13,12 +13,29 @@ data:
 
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: task-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: my-mongo-pvc
+  name: mongo-pvc
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: manual
   resources:
     requests:
       storage: 5Gi
@@ -41,9 +58,9 @@ spec:
         app: mongodb
     spec:
       volumes:
-      - name: my-mongo-persistent-storage
+      - name: mongo-persistent-storage
         persistentVolumeClaim:
-          claimName: my-mongo-pvc
+          claimName: mongo-pvc
       containers:
       - name: mongodb
         image: mongo
@@ -63,7 +80,7 @@ spec:
                   name: mongodb-secret
                   key: mongo-root-password 
         volumeMounts:
-          - name: my-mongo-persistent-storage
+          - name: mongo-persistent-storage
             mountPath: /data/db
 ---
 apiVersion: v1

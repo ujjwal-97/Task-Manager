@@ -33,6 +33,12 @@ func Jobs() error {
 		log.Println(err.Error())
 		return err
 	}
+	err = CreateSystemBackupCron(c)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
 	return err
 }
 

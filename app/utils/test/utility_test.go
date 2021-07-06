@@ -1,11 +1,10 @@
 package utils
 
 import (
-	"net/http/httptest"
-	"testing"
-
 	"app/db"
 	"app/utils"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"

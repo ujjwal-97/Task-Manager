@@ -97,7 +97,7 @@ func UpdateTask(c *gin.Context, id *primitive.ObjectID, taskUpdate *models.Task)
 	utilsTask := utils.Task{}
 	utilsTask.Id = *id
 	if err := utilsTask.FindOne(c).Decode(&task); err != nil {
-		return err
+		return errors.New("no such task found")
 	}
 	var update bson.M
 	if taskUpdate.Title != "" {

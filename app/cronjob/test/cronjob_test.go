@@ -155,3 +155,10 @@ func TestRestoreBackup(t *testing.T) {
 	_, err := cronjob.RestoreDump()
 	assert.NoError(t, err)
 }
+
+func TestSystemBackup(t *testing.T) {
+	godotenv.Load("../../.env")
+
+	_, err := cronjob.CreateSystemBackup()
+	assert.NoError(t, err)
+}

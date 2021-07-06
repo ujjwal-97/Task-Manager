@@ -54,7 +54,7 @@ func HandleGetSingleUser(c *gin.Context) {
 
 	if err != nil {
 		log.Println(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Not a valid Hex ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Not a valid Hex ID"})
 		return
 	}
 
@@ -72,7 +72,7 @@ func HandleUpdateUser(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(c.Param("id"))
 
 	if err != nil {
-		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 		return
 	}
 
@@ -85,7 +85,7 @@ func HandleUpdateUser(c *gin.Context) {
 	}
 
 	if err := service.UpdateUser(c, &id, &user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Can't find User"})
 		return
 	}
 	var updatedUser *models.User
